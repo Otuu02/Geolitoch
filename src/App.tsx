@@ -7,11 +7,10 @@ import Layout from './Layout';
 import { 
   FleetPage, AirportTransferPage, TeamPage, AboutPage, 
   BlogPage, BlogPostPage, FAQPage, ContactPage, PartnersPage,
-  CheckoutPage // <-- ADDED THIS IMPORT
+  CheckoutPage
 } from './Pages'; 
 
 const COMPANY_NAME = 'Geolitoch Enterprises';
-const COMPANY_PHONE = '+15552349000';
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2000&auto=format&fit=crop',
@@ -34,7 +33,7 @@ const INITIAL_LISTINGS = [
 ];
 
 function HomePage({ listings, setListings }: any) {
-  const navigate = useNavigate(); // <-- ADDED for redirection
+  const navigate = useNavigate();
   const [selectedListing, setSelectedListing] = useState<any>(null);
   const [form, setForm] = useState({ name: '', phone: '', start: '', end: '' });
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -53,14 +52,10 @@ function HomePage({ listings, setListings }: any) {
     e.preventDefault();
     if (!form.name || !form.phone || !form.start || !form.end) return alert('Please fill all fields');
     
-    // Mark as booked
     setListings(listings.map((l: any) => l.id === selectedListing.id ? { ...l, status: 'booked' } : l));
-    
-    // Clear form and close modal
     setSelectedListing(null);
     setForm({ name: '', phone: '', start: '', end: '' });
     
-    // REDIRECT TO PAYMENT PAGE
     navigate('/checkout');
   };
 
@@ -334,7 +329,6 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/fleet-partners" element={<PartnersPage />} />
           
-          {/* ADDED CHECKOUT ROUTE */}
           <Route path="/checkout" element={<CheckoutPage />} />
         </Route>
 

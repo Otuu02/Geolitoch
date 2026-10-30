@@ -157,7 +157,12 @@ export default function AdminPanel({ listings, setListings }: any) {
       <header className="admin-header-bar">
         <div className="admin-header-content">
           <div className="admin-brand">
-            <span className="logo-icon">G</span>
+            {/* APPLIED animated-logo CLASS HERE */}
+            <img 
+              src="/logo.png" 
+              alt="Geolitoch Logo" 
+              className="animated-logo"
+            />
             <div>
               <h1>Geolitoch</h1>
               <p>ENTERPRISES</p>
