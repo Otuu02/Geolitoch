@@ -1,18 +1,19 @@
 /* =========================================
-   CUSTOMER DASHBOARD (Geolitoch Theme)
+   CUSTOMER DASHBOARD (Geolitoch Dark Theme)
    ========================================= */
 .customer-dashboard-layout {
   display: flex;
-  min-height: 100vh;
-  background-color: #f1f5f9; /* Light grey background for the main area */
+  min-height: calc(100vh - 70px); /* Adjust based on your header height */
+  background-color: #0f172a; /* Very dark navy/black */
   font-family: 'Inter', sans-serif;
+  color: #fff;
 }
 
 /* --- SIDEBAR --- */
 .dashboard-sidebar {
   width: 260px;
-  background-color: var(--navy); /* Geolitoch Navy */
-  border-right: 1px solid var(--navy-light);
+  background-color: #0a1c3a; /* Geolitoch Navy */
+  border-right: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
   padding: 24px 0;
@@ -37,26 +38,26 @@
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  color: var(--navy);
+  color: #0a1c3a;
   font-weight: bold;
-  border: 3px solid var(--red); /* Red border around avatar */
+  border: 3px solid var(--red);
 }
 
 .sidebar-profile h3 {
   margin: 0;
   font-size: 1rem;
   color: #fff;
-  letter-spacing: 0.5px;
 }
 
 .sidebar-profile p {
   margin: 4px 0 12px 0;
   font-size: 0.75rem;
   color: #cbd5e1;
+  word-break: break-all;
 }
 
 .member-badge {
-  background-color: rgba(212, 163, 115, 0.15); /* Gold transparent */
+  background-color: rgba(212, 163, 115, 0.15);
   color: var(--gold);
   border: 1px solid var(--gold);
   padding: 4px 12px;
@@ -90,12 +91,12 @@
 }
 
 .sidebar-nav-item:hover {
-  background-color: var(--navy-light);
+  background-color: #1e3a5f; /* Navy light */
   color: #fff;
 }
 
 .sidebar-nav-item.active {
-  background-color: var(--red); /* Geolitoch Red for active tab */
+  background-color: var(--red);
   color: #fff;
   font-weight: 600;
 }
@@ -103,7 +104,7 @@
 .sidebar-nav-item.sign-out {
   color: #fca5a5;
   margin-top: 20px;
-  border-top: 1px solid var(--navy-light);
+  border-top: 1px solid #1e293b;
   border-radius: 0;
   padding-top: 20px;
 }
@@ -118,13 +119,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  background-color: #0f172a;
 }
 
-/* TOP BAR */
+/* TOP BAR (Inside dashboard) */
 .dashboard-topbar {
   height: 70px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -134,9 +136,8 @@
 .dashboard-topbar h1 {
   font-size: 1.4rem;
   font-family: 'Playfair Display', serif;
-  color: var(--navy);
+  color: #fff;
   margin: 0;
-  font-weight: 700;
 }
 
 .profile-dropdown-container {
@@ -147,19 +148,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: var(--navy);
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #fff;
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
-  transition: 0.2s;
 }
 
 .profile-dropdown-btn:hover {
-  background: #e2e8f0;
+  background: #334155;
 }
 
 .dropdown-menu-dark {
@@ -167,30 +167,30 @@
   top: 120%;
   right: 0;
   width: 240px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #1e293b;
+  border: 1px solid #334155;
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(10, 28, 58, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   padding: 8px 0;
   z-index: 100;
 }
 
 .dropdown-header {
   padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #334155;
   margin-bottom: 8px;
 }
 
 .dropdown-header h4 {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--navy);
+  color: #fff;
 }
 
 .dropdown-header p {
   margin: 4px 0 0 0;
   font-size: 0.75rem;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .dropdown-item-dark {
@@ -198,27 +198,22 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  color: #475569;
+  color: #cbd5e1;
   background: transparent;
   border: none;
   width: 100%;
   text-align: left;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: 500;
 }
 
 .dropdown-item-dark:hover {
-  background: #f8fafc;
-  color: var(--navy);
+  background: #334155;
+  color: #fff;
 }
 
 .dropdown-item-dark.sign-out {
-  color: var(--red);
-}
-
-.dropdown-item-dark.sign-out:hover {
-  background: #fef2f2;
+  color: #fca5a5;
 }
 
 /* --- DASHBOARD CONTENT --- */
@@ -228,10 +223,17 @@
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-family: 'Playfair Display', serif;
   margin-bottom: 24px;
-  color: var(--navy);
+  color: #fff;
+}
+
+.greeting {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  display: block;
 }
 
 /* Stat Cards */
@@ -243,14 +245,13 @@
 }
 
 .stat-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #111827; /* Darker card */
+  border: 1px solid #1e293b;
   border-radius: 12px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 4px 6px rgba(10, 28, 58, 0.02);
 }
 
 .stat-icon {
@@ -263,33 +264,32 @@
   font-size: 1.2rem;
 }
 
-.stat-icon.orange { background: rgba(212, 163, 115, 0.15); color: var(--gold); } /* Replaced with Gold */
-.stat-icon.green { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
-.stat-icon.red { background: rgba(225, 29, 44, 0.1); color: var(--red); }
-.stat-icon.blue { background: rgba(10, 28, 58, 0.1); color: var(--navy); }
+.stat-icon.orange { background: rgba(212, 163, 115, 0.15); color: var(--gold); }
+.stat-icon.green { background: rgba(22, 163, 74, 0.15); color: #4ade80; }
+.stat-icon.red { background: rgba(225, 29, 44, 0.15); color: #f87171; }
+.stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 
 .stat-label {
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: #64748b;
+  color: #94a3b8;
   letter-spacing: 1px;
   font-weight: 600;
 }
 
 .stat-value {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: var(--navy);
+  color: #fff;
   font-family: 'Playfair Display', serif;
 }
 
 /* Recent Bookings Area */
 .recent-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #111827;
+  border: 1px solid #1e293b;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 6px rgba(10, 28, 58, 0.02);
 }
 
 .recent-header {
@@ -302,8 +302,15 @@
 .recent-header h3 {
   margin: 0;
   font-size: 1.2rem;
-  color: var(--navy);
+  color: #fff;
   font-family: 'Playfair Display', serif;
+}
+
+.view-all {
+  color: var(--gold);
+  font-size: 0.85rem;
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .empty-state {
@@ -312,7 +319,7 @@
   align-items: center;
   justify-content: center;
   padding: 60px 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .empty-state button {
@@ -320,11 +327,14 @@
   background: var(--red);
   border: none;
   color: #ffffff;
-  padding: 10px 24px;
+  padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .empty-state button:hover {

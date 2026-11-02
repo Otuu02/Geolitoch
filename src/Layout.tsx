@@ -4,24 +4,22 @@ import { useState, useEffect } from 'react';
 export default function Layout() {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   
-  // Track customer login state
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
 
-  // Check for saved customer on page load
   useEffect(() => {
     const savedUser = localStorage.getItem('customer_name') || localStorage.getItem('geolitoch_customer');
     if (savedUser) setLoggedInUser(savedUser);
   }, []);
 
   const handleLogout = () => {
-    // Clear all customer data
     localStorage.removeItem('customer_auth');
     localStorage.removeItem('customer_name');
     localStorage.removeItem('customer_email');
     localStorage.removeItem('geolitoch_customer');
-    
     setLoggedInUser(null);
+    setIsProfileOpen(false);
     navigate('/');
   };
 
@@ -59,17 +57,38 @@ export default function Layout() {
           </nav>
 
           <div className="header-actions">
-            {/* LOGIC: Show Dashboard + Logout if logged in, otherwise show Sign In Link */}
             {loggedInUser ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Link to="/dashboard" className="sign-in-btn" style={{ textDecoration: 'none', background: 'var(--navy-light)' }}>
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                  <span className="hide-on-mobile">My Dashboard</span>
-                </Link>
-                
-                <button onClick={handleLogout} className="sign-in-btn" style={{ borderColor: 'var(--red)', color: '#fca5a5' }}>
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="sign-in-btn" 
+                  style={{ border: 'none', background: 'var(--red)', color: 'white', padding: '10px 20px', borderRadius: '6px' }}
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span className="hide-on-mobile" style={{ margin: '0 8px' }}>{loggedInUser.split('@')[0].toUpperCase()}</span>
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
+
+                {isProfileOpen && (
+                  <div style={{ position: 'absolute', top: '120%', right: 0, background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', width: '220px', zIndex: 1000, overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #1e293b' }}>
+                      <p style={{ margin: 0, color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{loggedInUser.toUpperCase()}</p>
+                      <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '0.75rem' }}>{loggedInUser}@gmail.com</p>
+                    </div>
+                    <Link to="/dashboard" onClick={() => setIsProfileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#cbd5e1', textDecoration: 'none', fontSize: '0.9rem', borderBottom: '1px solid #1e293b' }}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                      Dashboard
+                    </Link>
+                    <Link to="/dashboard" onClick={() => setIsProfileOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#cbd5e1', textDecoration: 'none', fontSize: '0.9rem', borderBottom: '1px solid #1e293b' }}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                      My Bookings
+                    </Link>
+                    <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', color: '#fca5a5', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', fontSize: '0.9rem' }}>
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link to="/customer-login" className="sign-in-btn" style={{ textDecoration: 'none' }}>
