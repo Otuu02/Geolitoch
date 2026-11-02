@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 import AdminPanel from './AdminPanel';
 import Login from './Login';
 import Layout from './Layout';
+import CustomerDashboard from './CustomerDashboard';
 import { supabase } from './supabase'; 
 import { 
   FleetPage, AirportTransferPage, TeamPage, AboutPage, 
@@ -21,9 +22,21 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=2000&auto=format&fit=crop',
 ];
 
-function HomePage({ listings }: any) {
+// Define Listing Type to satisfy TypeScript
+interface Listing {
+  id: string | number;
+  title: string;
+  price: number;
+  detail: string;
+  image: string;
+  type: 'car' | 'house';
+  status: 'available' | 'booked' | 'maintenance' | 'sold';
+  created_at?: string;
+}
+
+function HomePage({ listings }: { listings: Listing[] }) {
   const navigate = useNavigate();
-  const [selectedListing, setSelectedListing] = useState<any>(null);
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [form, setForm] = useState({ name: '', phone: '', start: '', end: '' });
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -52,8 +65,8 @@ function HomePage({ listings }: any) {
     document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const availableCars = listings.filter((l: any) => l.type === 'car' && l.status === 'available');
-  const availableHouses = listings.filter((l: any) => l.type === 'house' && l.status === 'available');
+  const availableCars = listings.filter((l: Listing) => l.type === 'car' && l.status === 'available');
+  const availableHouses = listings.filter((l: Listing) => l.type === 'house' && l.status === 'available');
 
   return (
     <div>
@@ -182,7 +195,7 @@ function HomePage({ listings }: any) {
             {availableCars.length === 0 && (
               <p style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '40px' }}>No vehicles available right now.</p>
             )}
-            {availableCars.map((listing: any) => (
+            {availableCars.map((listing: Listing) => (
               <div key={listing.id} className="premium-card">
                 <div className="card-image-wrapper">
                   <span className="badge car">SUV</span>
@@ -191,7 +204,6 @@ function HomePage({ listings }: any) {
                 </div>
                 <div className="card-content">
                   <h3>{listing.title}</h3>
-                  {/* REPLACED HARDCODED SPECS WITH REAL DESCRIPTION */}
                   <div className="specs-row" style={{ padding: '12px 0', display: 'block', minHeight: 'auto' }}>
                     <span style={{ color: '#64748b', fontSize: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '8px', fontWeight: 500, lineHeight: 1.4 }}>
                       <i className="icon" style={{ marginTop: '2px' }}>📋</i> 
@@ -201,7 +213,7 @@ function HomePage({ listings }: any) {
                   <div className="card-footer">
                     <div className="price-box">
                       <span className="price-label">FROM</span>
-                      <span className="price-value">₦{listing.price.toLocaleString()}</span>
+                      <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
                     <button className="btn-book" onClick={() => setSelectedListing(listing)}>
@@ -244,7 +256,7 @@ function HomePage({ listings }: any) {
             {availableHouses.length === 0 && (
               <p style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '40px' }}>No properties available right now.</p>
             )}
-            {availableHouses.map((listing: any) => (
+            {availableHouses.map((listing: Listing) => (
               <div key={listing.id} className="premium-card">
                 <div className="card-image-wrapper">
                   <span className="badge house">HOUSE</span>
@@ -253,7 +265,6 @@ function HomePage({ listings }: any) {
                 </div>
                 <div className="card-content">
                   <h3>{listing.title}</h3>
-                  {/* REPLACED HARDCODED SPECS WITH REAL DESCRIPTION */}
                   <div className="specs-row" style={{ padding: '12px 0', display: 'block', minHeight: 'auto' }}>
                     <span style={{ color: '#64748b', fontSize: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '8px', fontWeight: 500, lineHeight: 1.4 }}>
                       <i className="icon" style={{ marginTop: '2px' }}>🏠</i> 
@@ -263,7 +274,7 @@ function HomePage({ listings }: any) {
                   <div className="card-footer">
                     <div className="price-box">
                       <span className="price-label">FROM</span>
-                      <span className="price-value">₦{listing.price.toLocaleString()}</span>
+                      <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/night</span>
                     </div>
                     <button className="btn-book" onClick={() => setSelectedListing(listing)}>
@@ -282,7 +293,7 @@ function HomePage({ listings }: any) {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Book: {selectedListing.title}</h3>
             <p className="modal-company">{COMPANY_NAME}</p>
-            <p className="modal-price">₦{selectedListing.price.toLocaleString()}</p>
+            <p className="modal-price">₦{selectedListing.price?.toLocaleString()}</p>
             <form onSubmit={submitBooking}>
               <input placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               <input placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
@@ -302,16 +313,21 @@ function HomePage({ listings }: any) {
   );
 }
 
+// ADMIN PROTECTED ROUTE
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = localStorage.getItem('geolitoch_auth') === 'true';
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-function App() {
-  // START WITH EMPTY LISTINGS
-  const [listings, setListings] = useState<any[]>([]);
+// CUSTOMER PROTECTED ROUTE
+function CustomerProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isCustomerAuthenticated = localStorage.getItem('customer_auth') === 'true';
+  return isCustomerAuthenticated ? <>{children}</> : <Navigate to="/customer-login" replace />;
+}
 
-  // FETCH DATA FROM SUPABASE ON LOAD
+function App() {
+  const [listings, setListings] = useState<Listing[]>([]);
+
   useEffect(() => {
     async function fetchListings() {
       const { data, error } = await supabase
@@ -322,7 +338,7 @@ function App() {
       if (error) {
         console.error('Error fetching listings:', error);
       } else {
-        setListings(data || []);
+        setListings((data as Listing[]) || []);
       }
     }
     fetchListings();
@@ -348,11 +364,24 @@ function App() {
           <Route path="/checkout" element={<CheckoutPage />} />
         </Route>
 
+        {/* ADMIN LOGIN */}
         <Route path="/login" element={<Login />} />
+        
+        {/* ADMIN DASHBOARD */}
         <Route path="/admin" element={
           <ProtectedRoute>
             <AdminPanel listings={listings} />
           </ProtectedRoute>
+        } />
+
+        {/* CUSTOMER LOGIN */}
+        <Route path="/customer-login" element={<Login />} /> 
+        
+        {/* CUSTOMER DASHBOARD */}
+        <Route path="/dashboard" element={
+          <CustomerProtectedRoute>
+            <CustomerDashboard />
+          </CustomerProtectedRoute>
         } />
       </Routes>
     </BrowserRouter>
