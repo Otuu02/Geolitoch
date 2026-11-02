@@ -501,7 +501,7 @@ export const ContactPage = () => {
               </div>
               <div>
                 <h4 style={{ color: 'var(--navy)', fontSize: '1.2rem', marginBottom: '8px' }}>Email Us</h4>
-                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>geolitoch@gmail.com</a>
+                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>geolitoch@gmail.com</a>
               </div>
             </div>
 
