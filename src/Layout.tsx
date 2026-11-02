@@ -1,26 +1,47 @@
-import { Outlet, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const COMPANY_NAME = 'Geolitoch Enterprises';
 
 export default function Layout() {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // State to track if user is logged in
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
 
   const [showCustomerAuth, setShowCustomerAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [customerForm, setCustomerForm] = useState({ name: '', email: '', password: '' });
 
+  // Check for saved user on page load
+  useEffect(() => {
+    const savedUser = localStorage.getItem('geolitoch_customer');
+    if (savedUser) setLoggedInUser(savedUser);
+  }, []);
+
   const handleCustomerAuth = (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === 'signup') {
       if (!customerForm.name || !customerForm.email || !customerForm.password) return alert('Please fill all fields');
-      alert(`Account created successfully for ${customerForm.name}! You are now logged in.`);
+      localStorage.setItem('geolitoch_customer', customerForm.name);
+      setLoggedInUser(customerForm.name);
+      alert(`Account created successfully for ${customerForm.name}!`);
     } else {
       if (!customerForm.email || !customerForm.password) return alert('Please fill all fields');
-      alert(`Welcome back, ${customerForm.email}! You are now logged in.`);
+      localStorage.setItem('geolitoch_customer', customerForm.email);
+      setLoggedInUser(customerForm.email);
+      alert(`Welcome back, ${customerForm.email}!`);
     }
     setShowCustomerAuth(false);
     setCustomerForm({ name: '', email: '', password: '' });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('geolitoch_customer');
+    setLoggedInUser(null);
+    navigate('/');
+    alert('You have been logged out.');
   };
 
   return (
@@ -28,7 +49,6 @@ export default function Layout() {
       <header className="site-header">
         <div className="header-container">
           
-          {/* TOP ROW: Logo & Hamburger */}
           <div className="header-top-row">
             <Link to="/" className="brand" style={{ textDecoration: 'none' }}>
               <img src="/logo.png" alt="Geolitoch Logo" className="animated-logo" />
@@ -38,21 +58,13 @@ export default function Layout() {
               </div>
             </Link>
             
-            <button 
-              className="mobile-menu-btn"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
+            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                {isMobileMenuOpen ? (
-                  <path d="M18 6L6 18M6 6l12 12"></path>
-                ) : (
-                  <path d="M3 12h18M3 6h18M3 18h18"></path>
-                )}
+                {isMobileMenuOpen ? <path d="M18 6L6 18M6 6l12 12"></path> : <path d="M3 12h18M3 6h18M3 18h18"></path>}
               </svg>
             </button>
           </div>
 
-          {/* MIDDLE ROW: Navigation (Hidden on mobile until clicked) */}
           <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
             <Link to="/" className="nav-link" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
             <Link to="/fleet" className="nav-link" onClick={() => setIsMobileMenuOpen(false)}>Fleet</Link>
@@ -65,12 +77,20 @@ export default function Layout() {
             <Link to="/fleet-partners" className="nav-link" onClick={() => setIsMobileMenuOpen(false)}>Fleet Partners</Link>
           </nav>
 
-          {/* BOTTOM ROW: Action Buttons */}
           <div className="header-actions">
-            <button onClick={() => setShowCustomerAuth(true)} className="sign-in-btn">
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              <span className="hide-on-mobile">Customer Sign In</span>
-            </button>
+            {/* LOGIC: Show Sign In OR Logout based on state */}
+            {loggedInUser ? (
+              <button onClick={handleLogout} className="sign-in-btn" style={{ borderColor: 'var(--red)', color: '#fca5a5' }}>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span className="hide-on-mobile">Logout ({loggedInUser.split('@')[0]})</span>
+              </button>
+            ) : (
+              <button onClick={() => { setAuthMode('login'); setShowCustomerAuth(true); }} className="sign-in-btn">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span className="hide-on-mobile">Customer Sign In</span>
+              </button>
+            )}
+            
             <Link to="/fleet" className="phone-btn">BOOK NOW</Link>
           </div>
         </div>
