@@ -6,7 +6,7 @@ const CustomerDashboard = () => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
-  const [userName, setUserName] = useState('Gift');
+  const [userName] = useState('Gift'); // Fixed: removed unused setUserName
 
   const handleLogout = () => {
     localStorage.removeItem('customer_auth');
