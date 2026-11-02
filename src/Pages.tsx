@@ -505,8 +505,7 @@ export const ContactPage = () => {
             </div>
 
             {/* Location/WhatsApp */}
-                       <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
-              <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
+            <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <div>
@@ -684,7 +683,11 @@ export const CustomerDashboard = () => {
         .eq('customer_email', userEmail)
         .order('booking_date', { ascending: false });
 
-      if (data) setBookings(data);
+      if (error) {
+        console.error('Error fetching bookings:', error);
+      } else if (data) {
+        setBookings(data);
+      }
       setLoading(false);
     }
     fetchBookings();
