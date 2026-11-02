@@ -4,6 +4,7 @@ import './App.css';
 import AdminPanel from './AdminPanel';
 import Login from './Login';
 import Layout from './Layout';
+import { supabase } from './supabase'; // <-- IMPORTED SUPABASE
 import { 
   FleetPage, AirportTransferPage, TeamPage, AboutPage, 
   BlogPage, BlogPostPage, FAQPage, ContactPage, PartnersPage,
@@ -20,19 +21,7 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=2000&auto=format&fit=crop',
 ];
 
-const INITIAL_LISTINGS = [
-  { id: '1', type: 'car', title: 'Cadillac Escalade', price: 300000, detail: '7 Seats · 4 Doors · Automatic · Petrol', image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '2', type: 'car', title: 'Lexus RX350', price: 290000, detail: '5 Seats · 4 Doors · Automatic · Petrol', image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '3', type: 'car', title: 'Toyota Prado', price: 160000, detail: '7 Seats · 4 Doors · Automatic · Petrol', image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '4', type: 'car', title: 'Mercedes G63', price: 450000, detail: '5 Seats · 4 Doors · Automatic · Petrol', image: 'https://images.unsplash.com/photo-1520031441872-265e4ff70366?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '5', type: 'car', title: 'Range Rover', price: 380000, detail: '5 Seats · 4 Doors · Automatic · Petrol', image: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '6', type: 'car', title: 'Toyota Hilux', price: 200000, detail: '5 Seats · 4 Doors · Automatic · Diesel', image: 'https://images.unsplash.com/photo-1620589912598-0c2a3b1c1c1c?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '7', type: 'house', title: 'Modern Penthouse', price: 1250000, detail: '3 Bed · 2 Bath · 1450 Sqft', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '8', type: 'house', title: 'Cozy Suburban Home', price: 389000, detail: '4 Bed · 2.5 Bath · 2100 Sqft', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-  { id: '9', type: 'house', title: 'Luxury Beach Villa', price: 2500000, detail: '5 Bed · 4 Bath · 3500 Sqft', image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1000&auto=format&fit=crop', status: 'available' },
-];
-
-function HomePage({ listings, setListings }: any) {
+function HomePage({ listings }: any) {
   const navigate = useNavigate();
   const [selectedListing, setSelectedListing] = useState<any>(null);
   const [form, setForm] = useState({ name: '', phone: '', start: '', end: '' });
@@ -52,7 +41,6 @@ function HomePage({ listings, setListings }: any) {
     e.preventDefault();
     if (!form.name || !form.phone || !form.start || !form.end) return alert('Please fill all fields');
     
-    setListings(listings.map((l: any) => l.id === selectedListing.id ? { ...l, status: 'booked' } : l));
     setSelectedListing(null);
     setForm({ name: '', phone: '', start: '', end: '' });
     
@@ -191,6 +179,9 @@ function HomePage({ listings, setListings }: any) {
           </div>
 
           <div className="grid">
+            {availableCars.length === 0 && (
+              <p style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '40px' }}>No vehicles available right now.</p>
+            )}
             {availableCars.map((listing: any) => (
               <div key={listing.id} className="premium-card">
                 <div className="card-image-wrapper">
@@ -248,6 +239,9 @@ function HomePage({ listings, setListings }: any) {
           </div>
 
           <div className="grid houses-grid">
+            {availableHouses.length === 0 && (
+              <p style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '40px' }}>No properties available right now.</p>
+            )}
             {availableHouses.map((listing: any) => (
               <div key={listing.id} className="premium-card">
                 <div className="card-image-wrapper">
@@ -310,13 +304,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const [listings, setListings] = useState(INITIAL_LISTINGS);
+  // START WITH EMPTY LISTINGS
+  const [listings, setListings] = useState<any[]>([]);
+
+  // FETCH DATA FROM SUPABASE ON LOAD
+  useEffect(() => {
+    async function fetchListings() {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching listings:', error);
+      } else {
+        setListings(data || []);
+      }
+    }
+    fetchListings();
+  }, []);
 
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<HomePage listings={listings} setListings={setListings} />} />
+          <Route path="/" element={<HomePage listings={listings} />} />
           <Route path="/fleet" element={<FleetPage listings={listings} />} />
           <Route path="/airport-transfer" element={<AirportTransferPage />} />
           <Route path="/team" element={<TeamPage />} />
@@ -335,7 +347,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={
           <ProtectedRoute>
-            <AdminPanel listings={listings} setListings={setListings} />
+            {/* REMOVED setListings PROP HERE */}
+            <AdminPanel listings={listings} />
           </ProtectedRoute>
         } />
       </Routes>

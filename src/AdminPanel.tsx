@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from './supabase'; // <-- IMPORTED SUPABASE
+import { supabase } from './supabase';
 
 const hashPassword = (str: string) => {
   let hash = 0;
@@ -11,7 +11,8 @@ const hashPassword = (str: string) => {
   return hash.toString();
 };
 
-export default function AdminPanel({ listings, setListings }: any) {
+// REMOVED setListings FROM THE PARAMETERS BELOW
+export default function AdminPanel({ listings }: any) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'all' | 'car' | 'house'>('all');
   
