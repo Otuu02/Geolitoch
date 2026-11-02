@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from './supabase'; // <-- IMPORTED SUPABASE
 
 const hashPassword = (str: string) => {
   let hash = 0;
@@ -85,8 +86,8 @@ export default function AdminPanel({ listings, setListings }: any) {
     }
   };
 
-  // --- SUBMIT FORM ---
-  const handleSubmit = (e: React.FormEvent) => {
+  // --- SUBMIT FORM (CONNECTED TO SUPABASE) ---
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.price || !formData.detail) {
       alert("Please fill in all fields.");
@@ -98,24 +99,43 @@ export default function AdminPanel({ listings, setListings }: any) {
       : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1000&auto=format&fit=crop';
 
     if (isEditing) {
-      setListings(listings.map((l: any) => 
-        l.id === formData.id 
-          ? { ...l, type: formData.type, title: formData.title, price: parseFloat(formData.price), detail: formData.detail, image: formData.image || defaultImage } 
-          : l
-      ));
-      alert("Listing updated successfully!");
+      // Update existing row in Supabase
+      const { error } = await supabase
+        .from('listings')
+        .update({
+          type: formData.type,
+          title: formData.title,
+          price: parseFloat(formData.price),
+          detail: formData.detail,
+          image: formData.image || defaultImage
+        })
+        .eq('id', formData.id);
+
+      if (error) {
+        alert("Error updating: " + error.message);
+      } else {
+        alert("Listing updated successfully!");
+        window.location.reload(); 
+      }
     } else {
-      const newItem = {
-        id: Date.now().toString(),
-        type: formData.type,
-        title: formData.title,
-        price: parseFloat(formData.price),
-        detail: formData.detail,
-        image: formData.image || defaultImage,
-        status: 'available',
-      };
-      setListings([newItem, ...listings]);
-      alert("Listing uploaded successfully!");
+      // Insert new row into Supabase
+      const { error } = await supabase
+        .from('listings')
+        .insert([{
+          type: formData.type,
+          title: formData.title,
+          price: parseFloat(formData.price),
+          detail: formData.detail,
+          image: formData.image || defaultImage,
+          status: 'available'
+        }]);
+
+      if (error) {
+        alert("Error uploading: " + error.message);
+      } else {
+        alert("Listing uploaded successfully!");
+        window.location.reload(); 
+      }
     }
     
     setFormData({ id: '', type: 'car', title: '', price: '', detail: '', image: '' });
@@ -136,13 +156,28 @@ export default function AdminPanel({ listings, setListings }: any) {
     setIsEditing(false);
   };
 
-  const deleteListing = (id: string) => {
+  // --- DELETE (CONNECTED TO SUPABASE) ---
+  const deleteListing = async (id: string) => {
     if (!confirm('Are you sure you want to permanently delete this listing?')) return;
-    setListings(listings.filter((l: any) => l.id !== id));
+    
+    const { error } = await supabase.from('listings').delete().eq('id', id);
+    
+    if (error) {
+      alert("Error deleting: " + error.message);
+    } else {
+      window.location.reload();
+    }
   };
 
-  const updateStatus = (id: string, newStatus: string) => {
-    setListings(listings.map((l: any) => l.id === id ? { ...l, status: newStatus } : l));
+  // --- UPDATE STATUS (CONNECTED TO SUPABASE) ---
+  const updateStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase.from('listings').update({ status: newStatus }).eq('id', id);
+    
+    if (error) {
+      alert("Error updating status: " + error.message);
+    } else {
+      window.location.reload();
+    }
   };
 
   const filteredListings = listings.filter((l: any) => {
@@ -157,7 +192,6 @@ export default function AdminPanel({ listings, setListings }: any) {
       <header className="admin-header-bar">
         <div className="admin-header-content">
           <div className="admin-brand">
-            {/* APPLIED animated-logo CLASS HERE */}
             <img 
               src="/logo.png" 
               alt="Geolitoch Logo" 
@@ -297,7 +331,7 @@ export default function AdminPanel({ listings, setListings }: any) {
                 title="Click to change Settings"
               >
                 <span>Database Mode</span>
-                <p>Local Storage ✎</p>
+                <p>Supabase Cloud ✎</p>
               </button>
             </div>
           </div>
