@@ -46,7 +46,7 @@ const BLOG_POSTS = [
   }
 ];
 
-// === ACTUAL FLEET PAGE ===
+// === FLEET PAGE ===
 export const FleetPage = ({ listings = [] }: any) => {
   const availableCars = (listings || []).filter((l: any) => l.type === 'car' && l.status === 'available');
 
@@ -101,7 +101,7 @@ export const FleetPage = ({ listings = [] }: any) => {
   );
 };
 
-// === OUR TEAM PAGE ===
+// === TEAM PAGE ===
 export const TeamPage = () => {
   const team = [
     {
@@ -249,7 +249,7 @@ export const AboutPage = () => {
   );
 };
 
-// === BLOG PAGE (LIST OF POSTS) ===
+// === BLOG PAGE ===
 export const BlogPage = () => {
   return (
     <div style={{ paddingTop: '80px', paddingBottom: '80px', background: '#f8fafc' }}>
@@ -368,7 +368,7 @@ export const BlogPostPage = () => {
   );
 };
 
-// === UPDATED AIRPORT TRANSFER PAGE ===
+// === AIRPORT TRANSFER PAGE ===
 export const AirportTransferPage = () => (
   <div style={{ paddingTop: '80px', paddingBottom: '80px', background: '#f8fafc' }}>
     <div className="store-container" style={{ paddingTop: '0' }}>
@@ -439,6 +439,7 @@ export const AirportTransferPage = () => (
   </div>
 );
 
+// === FAQ PAGE ===
 export const FAQPage = () => (
   <PageLayout title="Frequently Asked Questions" subtitle="Support">
     <div style={{ textAlign: 'left', maxWidth: '700px', margin: '0 auto', fontSize: '1.05rem' }}>
@@ -454,7 +455,7 @@ export const FAQPage = () => (
   </PageLayout>
 );
 
-// === UPDATED CONTACT PAGE WITH FORM & REAL INFO ===
+// === CONTACT PAGE ===
 export const ContactPage = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
 
@@ -500,12 +501,13 @@ export const ContactPage = () => {
               </div>
               <div>
                 <h4 style={{ color: 'var(--navy)', fontSize: '1.2rem', marginBottom: '8px' }}>Email Us</h4>
-                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>geolitoch@gmail.com</a>
+                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>geolitoch@gmail.com</a>
               </div>
             </div>
 
             {/* Location/WhatsApp */}
-            <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
+            <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+              <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <div>
@@ -583,6 +585,7 @@ export const ContactPage = () => {
   );
 };
 
+// === B2B PARTNERS PAGE ===
 export const PartnersPage = () => (
   <div style={{ paddingTop: '80px', paddingBottom: '80px', background: '#f8fafc' }}>
     <div className="store-container" style={{ paddingTop: '0' }}>
