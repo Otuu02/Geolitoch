@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import AdminPanel from './AdminPanel';
 import Login from './Login';
@@ -35,13 +35,31 @@ interface Listing {
 }
 
 function HomePage({ listings }: { listings: Listing[] }) {
-  const navigate = useNavigate();
-  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
-  const [form, setForm] = useState({ name: '', phone: '', start: '', end: '' });
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
+  
+  // --- BOOKING WIDGET STATE ---
   const [bookingTab, setBookingTab] = useState<'daily' | 'booking' | 'interstate'>('daily');
   const [bookingType, setBookingType] = useState<'12hours' | 'airport'>('12hours');
+
+  const [formData, setFormData] = useState({
+    car: '',
+    pickupState: '',
+    dropoffState: '',
+    pickupCity: '',
+    dropoffCity: '',
+    pickupLocation: '',
+    dropoffLocation: '',
+    pickupDate: '',
+    pickupTime: '',
+    returnDate: '',
+    returnTime: '',
+    totalDays: '',
+    totalEscort: '0',
+    name: '',
+    phone: '',
+    email: '',
+    areaOfUse: ''
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -50,19 +68,64 @@ function HomePage({ listings }: { listings: Listing[] }) {
     return () => clearInterval(interval);
   }, []);
 
-  const submitBooking = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.phone || !form.start || !form.end) return alert('Please fill all fields');
-    
-    setSelectedListing(null);
-    setForm({ name: '', phone: '', start: '', end: '' });
-    
-    navigate('/checkout');
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSearchCars = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
+    
+    // Basic Validation
+    if (!formData.name && bookingTab !== 'daily') {
+      return alert('Please provide your name.');
+    }
+    if (!formData.phone && bookingTab !== 'daily') {
+      return alert('Please provide your phone number.');
+    }
+    if (!formData.pickupDate) {
+      return alert('Please select a pick up date.');
+    }
+
+    // Format Message for WhatsApp
+    let message = `*NEW BOOKING REQUEST - GEOLITOCH* 🚘\n\n`;
+    message += `*Booking Type:* ${bookingTab.toUpperCase()} (${bookingType === '12hours' ? '12 Hours' : 'Airport'})\n`;
+    
+    if (bookingTab === 'booking' || bookingTab === 'interstate') {
+      message += `*Vehicle:* ${formData.car || 'Any Available'}\n`;
+    }
+
+    message += `\n*--- TRIP DETAILS ---*\n`;
+    if (formData.pickupState) message += `*Pickup State:* ${formData.pickupState}\n`;
+    if (formData.dropoffState) message += `*Dropoff State:* ${formData.dropoffState}\n`;
+    if (formData.pickupCity) message += `*Pickup City:* ${formData.pickupCity}\n`;
+    if (formData.dropoffCity) message += `*Dropoff City:* ${formData.dropoffCity}\n`;
+    if (formData.pickupLocation) message += `*Pickup Address:* ${formData.pickupLocation}\n`;
+    if (formData.dropoffLocation) message += `*Dropoff Address:* ${formData.dropoffLocation}\n`;
+
+    message += `\n*--- SCHEDULE ---*\n`;
+    message += `*Pickup Date:* ${formData.pickupDate}\n`;
+    message += `*Pickup Time:* ${formData.pickupTime}\n`;
+    
+    if (bookingTab === 'booking' || bookingTab === 'interstate') {
+      message += `*Return Date:* ${formData.returnDate}\n`;
+      message += `*Return Time:* ${formData.returnTime}\n`;
+      message += `*Total Days:* ${formData.totalDays}\n`;
+      message += `*Total Escort:* ${formData.totalEscort}\n`;
+      message += `*Area of Use:* ${formData.areaOfUse}\n`;
+    }
+
+    if (bookingTab !== 'daily') {
+      message += `\n*--- CUSTOMER DETAILS ---*\n`;
+      message += `*Name:* ${formData.name}\n`;
+      message += `*Phone:* ${formData.phone}\n`;
+      if (formData.email) message += `*Email:* ${formData.email}\n`;
+    }
+
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = '2348038872570'; 
+    
+    // Open WhatsApp
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
 
   const availableCars = listings.filter((l: Listing) => l.type === 'car' && l.status === 'available');
@@ -89,6 +152,7 @@ function HomePage({ listings }: { listings: Listing[] }) {
             <p>Premium SUVs, Executive sedans & Chauffeur experiences across Lagos. Airport pickups, Corporate travel & Interstate journeys.</p>
           </div>
 
+          {/* NEW BOOKING WIDGET */}
           <div className="booking-widget">
             <div className="widget-tabs">
               <button className={bookingTab === 'daily' ? 'active' : ''} onClick={() => setBookingTab('daily')}>
@@ -105,61 +169,193 @@ function HomePage({ listings }: { listings: Listing[] }) {
               </button>
             </div>
 
-            <form className="widget-form" onSubmit={handleSearchCars}>
-              <div className="widget-row">
-                <button 
-                  type="button" 
-                  className={`widget-type-btn ${bookingType === '12hours' ? 'active' : ''}`}
-                  onClick={() => setBookingType('12hours')}
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                  12 Hours
-                </button>
-                <button 
-                  type="button" 
-                  className={`widget-type-btn ${bookingType === 'airport' ? 'active' : ''}`}
-                  onClick={() => setBookingType('airport')}
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
-                  Airport
-                </button>
-              </div>
+            <form className="widget-form" onSubmit={handleSubmit} style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
+              
+              {/* TAB 1: DAILY BOOKING */}
+              {bookingTab === 'daily' && (
+                <>
+                  <div className="widget-row">
+                    <button type="button" className={`widget-type-btn ${bookingType === '12hours' ? 'active' : ''}`} onClick={() => setBookingType('12hours')}>
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 12 Hours
+                    </button>
+                    <button type="button" className={`widget-type-btn ${bookingType === 'airport' ? 'active' : ''}`} onClick={() => setBookingType('airport')}>
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg> Airport
+                    </button>
+                  </div>
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>PICK UP LOCATION</label>
+                      <input type="text" name="pickupLocation" placeholder="Enter pick up address" value={formData.pickupLocation} onChange={handleInputChange} />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>DROP OFF LOCATION</label>
+                      <input type="text" name="dropoffLocation" placeholder="Enter drop off address" value={formData.dropoffLocation} onChange={handleInputChange} />
+                    </div>
+                  </div>
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>PICK UP DATE *</label>
+                      <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleInputChange} required />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>PICK UP TIME *</label>
+                      <select name="pickupTime" value={formData.pickupTime} onChange={handleInputChange} required>
+                        <option value="">Select time</option>
+                        <option value="06:00 AM">06:00 AM</option>
+                        <option value="08:00 AM">08:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="widget-checkbox">
+                    <span>AUTO DROP-OFF (+12 HOURS)</span>
+                    <span>—</span>
+                  </div>
+                </>
+              )}
 
-              <div className="widget-row">
-                <div className="widget-input-group">
-                  <label>PICK UP LOCATION</label>
-                  <input type="text" placeholder="Enter pick up address" />
-                </div>
-                <div className="widget-input-group">
-                  <label>DROP OFF LOCATION</label>
-                  <input type="text" placeholder="Enter drop off address" />
-                </div>
-              </div>
+              {/* TAB 2 & 3: MULTI-DAY BOOKING & INTERSTATE */}
+              {(bookingTab === 'booking' || bookingTab === 'interstate') && (
+                <>
+                  <div className="widget-input-group">
+                    <label>SELECT CAR *</label>
+                    <select name="car" value={formData.car} onChange={handleInputChange} required>
+                      <option value="">Choose a vehicle</option>
+                      {availableCars.map(car => (
+                        <option key={car.id} value={car.title}>{car.title}</option>
+                      ))}
+                      <option value="Any Available">Any Available Vehicle</option>
+                    </select>
+                  </div>
 
-              <div className="widget-row">
-                <div className="widget-input-group">
-                  <label>PICK UP DATE</label>
-                  <input type="date" />
-                </div>
-                <div className="widget-input-group">
-                  <label>PICK UP TIME</label>
-                  <select>
-                    <option>Select time</option>
-                    <option>08:00 AM</option>
-                    <option>12:00 PM</option>
-                    <option>04:00 PM</option>
-                  </select>
-                </div>
-              </div>
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>PICKUP STATE *</label>
+                      <select name="pickupState" value={formData.pickupState} onChange={handleInputChange} required>
+                        <option value="">Select state</option>
+                        <option value="Lagos">Lagos</option>
+                        <option value="Abuja">Abuja (FCT)</option>
+                        <option value="Ogun">Ogun</option>
+                        <option value="Oyo">Oyo</option>
+                        <option value="Rivers">Rivers</option>
+                        <option value="Enugu">Enugu</option>
+                      </select>
+                    </div>
+                    <div className="widget-input-group">
+                      <label>DROPOFF STATE *</label>
+                      <select name="dropoffState" value={formData.dropoffState} onChange={handleInputChange} required>
+                        <option value="">Select state</option>
+                        <option value="Lagos">Lagos</option>
+                        <option value="Abuja">Abuja (FCT)</option>
+                        <option value="Ogun">Ogun</option>
+                        <option value="Oyo">Oyo</option>
+                        <option value="Rivers">Rivers</option>
+                        <option value="Enugu">Enugu</option>
+                      </select>
+                    </div>
+                  </div>
 
-              <div className="widget-checkbox">
-                <span>AUTO DROP-OFF (+12 HOURS)</span>
-                <span>—</span>
-              </div>
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>PICKUP CITY</label>
+                      <input type="text" name="pickupCity" placeholder="e.g. Ikeja" value={formData.pickupCity} onChange={handleInputChange} />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>DROPOFF CITY</label>
+                      <input type="text" name="dropoffCity" placeholder="e.g. Ibadan" value={formData.dropoffCity} onChange={handleInputChange} />
+                    </div>
+                  </div>
 
-              <button type="submit" className="widget-search-btn">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                SEARCH AVAILABLE CARS
+                  <div className="widget-input-group">
+                    <label>PICKUP LOCATION *</label>
+                    <input type="text" name="pickupLocation" placeholder="Full pickup address" value={formData.pickupLocation} onChange={handleInputChange} required />
+                  </div>
+
+                  <div className="widget-input-group">
+                    <label>DROPOFF LOCATION *</label>
+                    <input type="text" name="dropoffLocation" placeholder="Full dropoff address" value={formData.dropoffLocation} onChange={handleInputChange} required />
+                  </div>
+
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>PICK UP DATE *</label>
+                      <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleInputChange} required />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>PICK UP TIME *</label>
+                      <select name="pickupTime" value={formData.pickupTime} onChange={handleInputChange} required>
+                        <option value="">Select time</option>
+                        <option value="06:00 AM">06:00 AM</option>
+                        <option value="08:00 AM">08:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>RETURN DATE</label>
+                      <input type="date" name="returnDate" value={formData.returnDate} onChange={handleInputChange} />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>RETURN TIME</label>
+                      <select name="returnTime" value={formData.returnTime} onChange={handleInputChange}>
+                        <option value="">Select time</option>
+                        <option value="06:00 AM">06:00 AM</option>
+                        <option value="08:00 AM">08:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>TOTAL DAYS *</label>
+                      <input type="number" name="totalDays" placeholder="e.g. 3" value={formData.totalDays} onChange={handleInputChange} required />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>TOTAL ESCORT</label>
+                      <input type="number" name="totalEscort" value={formData.totalEscort} onChange={handleInputChange} />
+                    </div>
+                  </div>
+
+                  <div className="widget-input-group">
+                    <label>YOUR NAME *</label>
+                    <input type="text" name="name" placeholder="Full name" value={formData.name} onChange={handleInputChange} required />
+                  </div>
+
+                  <div className="widget-row">
+                    <div className="widget-input-group">
+                      <label>PHONE *</label>
+                      <input type="tel" name="phone" placeholder="+234..." value={formData.phone} onChange={handleInputChange} required />
+                    </div>
+                    <div className="widget-input-group">
+                      <label>EMAIL</label>
+                      <input type="email" name="email" placeholder="you@example.com" value={formData.email} onChange={handleInputChange} />
+                    </div>
+                  </div>
+
+                  <div className="widget-input-group">
+                    <label>AREA OF USE</label>
+                    <input type="text" name="areaOfUse" placeholder="e.g. Highway, City roads, Mixed" value={formData.areaOfUse} onChange={handleInputChange} />
+                  </div>
+                </>
+              )}
+
+              {/* DYNAMIC SUBMIT BUTTON */}
+              <button type="submit" className="widget-search-btn" style={{ marginTop: '20px', width: '100%' }}>
+                {bookingTab === 'daily' ? (
+                  <>
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    SEARCH AVAILABLE CARS
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    SUBMIT BOOKING REQUEST
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -216,7 +412,7 @@ function HomePage({ listings }: { listings: Listing[] }) {
                       <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
-                    <button className="btn-book" onClick={() => setSelectedListing(listing)}>
+                    <button className="btn-book" onClick={() => window.open(`https://wa.me/2348038872570?text=Hi, I want to book the ${listing.title}`, '_blank')}>
                       BOOK NOW →
                     </button>
                   </div>
@@ -277,7 +473,7 @@ function HomePage({ listings }: { listings: Listing[] }) {
                       <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/night</span>
                     </div>
-                    <button className="btn-book" onClick={() => setSelectedListing(listing)}>
+                    <button className="btn-book" onClick={() => window.open(`https://wa.me/2348038872570?text=Hi, I want to book the ${listing.title}`, '_blank')}>
                       BOOK NOW →
                     </button>
                   </div>
@@ -287,28 +483,6 @@ function HomePage({ listings }: { listings: Listing[] }) {
           </div>
         </div>
       </div>
-
-      {selectedListing && (
-        <div className="modal-backdrop" onClick={() => setSelectedListing(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Book: {selectedListing.title}</h3>
-            <p className="modal-company">{COMPANY_NAME}</p>
-            <p className="modal-price">₦{selectedListing.price?.toLocaleString()}</p>
-            <form onSubmit={submitBooking}>
-              <input placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-              <input placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
-              <div className="date-row">
-                <input type="date" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} required />
-                <input type="date" value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} required />
-              </div>
-              <div className="modal-actions">
-                <button type="submit" className="btn-book">Confirm & Pay</button>
-                <button type="button" className="btn-secondary" onClick={() => setSelectedListing(null)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
