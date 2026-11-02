@@ -1,5 +1,6 @@
-import { Link, useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from './supabase';
 
 // A reusable wrapper for pages
 const PageLayout = ({ title, subtitle, children }: any) => (
@@ -74,10 +75,11 @@ export const FleetPage = ({ listings = [] }: any) => {
                 </div>
                 <div className="card-content">
                   <h3>{listing.title}</h3>
-                  <div className="specs-row">
-                    <span><i className="icon">👤</i> 5 Seats</span>
-                    <span><i className="icon">🚪</i> 4 Doors</span>
-                    <span><i className="icon">⚙️</i> Auto</span>
+                  <div className="specs-row" style={{ padding: '12px 0', display: 'block', minHeight: 'auto' }}>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '8px', fontWeight: 500, lineHeight: 1.4 }}>
+                      <i className="icon" style={{ marginTop: '2px' }}>📋</i> 
+                      {listing.detail}
+                    </span>
                   </div>
                   <div className="card-footer">
                     <div className="price-box">
@@ -503,7 +505,7 @@ export const ContactPage = () => {
             </div>
 
             {/* Location/WhatsApp */}
-            <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px  6px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                       <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
               <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
@@ -661,16 +663,109 @@ export const PartnersPage = () => (
     </div>
   </div>
 );
+
+// === CUSTOMER DASHBOARD ===
+export const CustomerDashboard = () => {
+  const navigate = useNavigate();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBookings() {
+      const userEmail = localStorage.getItem('geolitoch_customer');
+      if (!userEmail) {
+        navigate('/login');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('customer_email', userEmail)
+        .order('booking_date', { ascending: false });
+
+      if (data) setBookings(data);
+      setLoading(false);
+    }
+    fetchBookings();
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('geolitoch_customer');
+    navigate('/');
+    alert('You have been logged out.');
+  };
+
+  if (loading) return <div style={{ paddingTop: '120px', textAlign: 'center' }}>Loading your bookings...</div>;
+
+  return (
+    <div style={{ paddingTop: '120px', paddingBottom: '80px', background: '#f8fafc', minHeight: '80vh' }}>
+      <div className="store-container">
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+          <div>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', color: 'var(--navy)' }}>My Dashboard</h2>
+            <p style={{ color: '#64748b' }}>Welcome back, {localStorage.getItem('geolitoch_customer')}</p>
+          </div>
+          <button onClick={handleLogout} className="btn-book" style={{ padding: '12px 24px' }}>Logout</button>
+        </div>
+
+        <h3 style={{ fontSize: '1.5rem', color: 'var(--navy)', marginBottom: '20px' }}>Your Bookings</h3>
+        
+        {bookings.length === 0 ? (
+          <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
+            <p style={{ color: '#64748b' }}>You haven't made any bookings yet.</p>
+            <Link to="/fleet" className="btn-book" style={{ display: 'inline-block', marginTop: '20px', textDecoration: 'none' }}>Browse Cars</Link>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {bookings.map((booking) => (
+              <div key={booking.id} style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ fontSize: '1.2rem', color: 'var(--navy)', marginBottom: '4px' }}>{booking.car_name}</h4>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Booked on: {new Date(booking.booking_date).toLocaleDateString()}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontWeight: 'bold', color: 'var(--navy)', fontSize: '1.1rem' }}>₦{booking.amount.toLocaleString()}</p>
+                  <span style={{ color: '#16a34a', fontSize: '0.85rem', fontWeight: 600 }}>{booking.status.toUpperCase()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // === CHECKOUT / PAYMENT PAGE ===
 export const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
     
-    // Simulate a payment processing delay
+    const loggedInUser = localStorage.getItem('geolitoch_customer') || 'guest@geolitoch.com';
+    const params = new URLSearchParams(window.location.search);
+    const carTitle = params.get('car') || 'Vehicle Rental';
+    const carPrice = parseFloat(params.get('price') || '350000');
+
+    const { error } = await supabase.from('bookings').insert([{
+      customer_email: loggedInUser,
+      customer_name: loggedInUser.split('@')[0], 
+      car_name: carTitle,
+      amount: carPrice,
+      status: 'confirmed',
+      booking_date: new Date().toISOString()
+    }]);
+
+    if (error) {
+      console.error(error);
+      alert("Error saving booking: " + error.message);
+    }
+
     setTimeout(() => {
       setIsProcessing(false);
       setIsSuccess(true);
@@ -686,7 +781,7 @@ export const CheckoutPage = () => {
           </div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)', fontSize: '2rem', marginBottom: '10px' }}>Payment Successful!</h2>
           <p style={{ color: '#64748b', marginBottom: '30px' }}>Your booking is confirmed. A Geolitoch representative will contact you shortly with your vehicle details.</p>
-          <Link to="/" className="btn-book" style={{ display: 'inline-block', textDecoration: 'none', padding: '14px 32px' }}>Return to Home</Link>
+          <Link to="/dashboard" className="btn-book" style={{ display: 'inline-block', textDecoration: 'none', padding: '14px 32px' }}>Go to Dashboard</Link>
         </div>
       </div>
     );
