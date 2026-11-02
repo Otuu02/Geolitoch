@@ -1,5 +1,5 @@
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
 import { supabase } from './supabase';
 
 // A reusable wrapper for pages
@@ -665,84 +665,6 @@ export const PartnersPage = () => (
     </div>
   </div>
 );
-
-// === CUSTOMER DASHBOARD ===
-export const CustomerDashboard = () => {
-  const navigate = useNavigate();
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchBookings() {
-      const userEmail = localStorage.getItem('geolitoch_customer');
-      if (!userEmail) {
-        navigate('/login');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('customer_email', userEmail)
-        .order('booking_date', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching bookings:', error);
-      } else if (data) {
-        setBookings(data);
-      }
-      setLoading(false);
-    }
-    fetchBookings();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('geolitoch_customer');
-    navigate('/');
-    alert('You have been logged out.');
-  };
-
-  if (loading) return <div style={{ paddingTop: '120px', textAlign: 'center' }}>Loading your bookings...</div>;
-
-  return (
-    <div style={{ paddingTop: '120px', paddingBottom: '80px', background: '#f8fafc', minHeight: '80vh' }}>
-      <div className="store-container">
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-          <div>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', color: 'var(--navy)' }}>My Dashboard</h2>
-            <p style={{ color: '#64748b' }}>Welcome back, {localStorage.getItem('geolitoch_customer')}</p>
-          </div>
-          <button onClick={handleLogout} className="btn-book" style={{ padding: '12px 24px' }}>Logout</button>
-        </div>
-
-        <h3 style={{ fontSize: '1.5rem', color: 'var(--navy)', marginBottom: '20px' }}>Your Bookings</h3>
-        
-        {bookings.length === 0 ? (
-          <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-            <p style={{ color: '#64748b' }}>You haven't made any bookings yet.</p>
-            <Link to="/fleet" className="btn-book" style={{ display: 'inline-block', marginTop: '20px', textDecoration: 'none' }}>Browse Cars</Link>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '20px' }}>
-            {bookings.map((booking) => (
-              <div key={booking.id} style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h4 style={{ fontSize: '1.2rem', color: 'var(--navy)', marginBottom: '4px' }}>{booking.car_name}</h4>
-                  <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Booked on: {new Date(booking.booking_date).toLocaleDateString()}</p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontWeight: 'bold', color: 'var(--navy)', fontSize: '1.1rem' }}>₦{booking.amount.toLocaleString()}</p>
-                  <span style={{ color: '#16a34a', fontSize: '0.85rem', fontWeight: 600 }}>{booking.status.toUpperCase()}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 // === CHECKOUT / PAYMENT PAGE ===
 export const CheckoutPage = () => {
