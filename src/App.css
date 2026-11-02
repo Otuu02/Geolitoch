@@ -635,3 +635,80 @@ body {
     transform: scale(1);
   }
 }
+/* =========================================
+   MOBILE RESPONSIVE HEADER
+   ========================================= */
+
+/* Hide hamburger by default on desktop */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+}
+
+@media (max-width: 1024px) {
+  /* Show hamburger on tablets and phones */
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  /* Hide the header actions text on very small screens to save space */
+  .hide-on-mobile {
+    display: none;
+  }
+
+  /* Restructure the header for mobile */
+  .header-container {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+
+  /* Make the logo smaller on mobile */
+  .brand h1 {
+    font-size: 1.2rem;
+  }
+  .brand p {
+    font-size: 0.55rem;
+  }
+  .animated-logo {
+    height: 45px !important;
+    width: 45px !important;
+  }
+
+  /* Hide the navigation menu by default on mobile */
+  .header-nav {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    background: var(--navy);
+    padding: 16px 0;
+    margin-top: 16px;
+    border-top: 1px solid var(--navy-light);
+  }
+
+  /* Show the menu when the 'mobile-open' class is added */
+  .header-nav.mobile-open {
+    display: flex;
+  }
+
+  .header-nav .nav-link {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Adjust buttons for mobile */
+  .header-actions {
+    gap: 8px;
+  }
+  .sign-in-btn, .phone-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+}
