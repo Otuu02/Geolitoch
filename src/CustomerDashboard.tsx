@@ -1,21 +1,69 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from './supabase';
 import './CustomerDashboard.css';
+
+// Type definition for a Booking
+interface Booking {
+  id: string | number;
+  customer_email: string;
+  customer_name: string;
+  car_name: string;
+  amount: number;
+  status: string;
+  booking_date: string;
+}
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const userName = localStorage.getItem('customer_name') || 'OTUU OBINNA G';
-  const userEmail = localStorage.getItem('customer_email') || 'giftotuuobinna1995@gmail.com';
+  // Get user info from localStorage (saved during login)
+  const userName = localStorage.getItem('customer_name') || 'VALued Customer';
+  const userEmail = localStorage.getItem('customer_email') || '';
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!userEmail) {
+        setLoading(false);
+        return;
+      }
+
+      // Fetch from Supabase
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('customer_email', userEmail)
+        .order('booking_date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching bookings:', error);
+      } else if (data) {
+        setBookings(data);
+      }
+      setLoading(false);
+    };
+
+    fetchBookings();
+  }, [userEmail]);
+
+  // Calculate Stats
+  const totalBookings = bookings.length;
+  const pendingBookings = bookings.filter(b => b.status.toLowerCase() === 'pending').length;
+  const completedBookings = bookings.filter(b => b.status.toLowerCase() === 'completed' || b.status.toLowerCase() === 'confirmed').length;
+  
+  // Get current year for "Member Since" (You can replace this with actual user creation date later)
+  const memberSince = new Date().getFullYear();
 
   return (
     <div className="customer-dashboard-layout">
       {/* SIDEBAR */}
       <aside className="dashboard-sidebar">
         <div className="sidebar-profile">
-          <div className="sidebar-avatar">O</div>
-          <h3>{userName.toUpperCase()}</h3>
+          <div className="sidebar-avatar" style={{ color: 'var(--navy)' }}>{userName.charAt(0).toUpperCase()}</div>
+          <h3 style={{ fontSize: '0.9rem' }}>{userName.toUpperCase()}</h3>
           <p>{userEmail}</p>
           <span className="member-badge">★ MEMBER</span>
         </div>
@@ -70,22 +118,22 @@ const CustomerDashboard = () => {
             <div className="stat-card">
               <div className="stat-icon orange">📋</div>
               <span className="stat-label">Total Bookings</span>
-              <span className="stat-value">0</span>
+              <span className="stat-value">{loading ? '...' : totalBookings}</span>
             </div>
             <div className="stat-card">
               <div className="stat-icon red">⏱</div>
               <span className="stat-label">Pending</span>
-              <span className="stat-value">0</span>
+              <span className="stat-value">{loading ? '...' : pendingBookings}</span>
             </div>
             <div className="stat-card">
               <div className="stat-icon green">✅</div>
               <span className="stat-label">Completed</span>
-              <span className="stat-value">0</span>
+              <span className="stat-value">{loading ? '...' : completedBookings}</span>
             </div>
             <div className="stat-card">
               <div className="stat-icon blue">⭐</div>
               <span className="stat-label">Member Since</span>
-              <span className="stat-value">2026</span>
+              <span className="stat-value">{memberSince}</span>
             </div>
           </div>
 
@@ -96,7 +144,11 @@ const CustomerDashboard = () => {
               <a href="/fleet" className="view-all">VIEW ALL →</a>
             </div>
             
-            {activeTab === 'dashboard' && (
+            {loading ? (
+              <div className="empty-state">
+                <p>Loading your bookings...</p>
+              </div>
+            ) : bookings.length === 0 ? (
               <div className="empty-state">
                 <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" strokeWidth="1.5" fill="none" style={{ marginBottom: '16px' }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><line x1="10" y1="14" x2="14" y2="18"></line><line x1="14" y1="14" x2="10" y2="18"></line></svg>
                 <p>You have no bookings yet.</p>
@@ -105,9 +157,7 @@ const CustomerDashboard = () => {
                   BROWSE FLEET
                 </button>
               </div>
-            )}
-
-            {activeTab === 'bookings' && (
+            ) : (
               <div className="table-responsive">
                 <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
                   <thead>
@@ -119,12 +169,28 @@ const CustomerDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                      <td style={{ padding: '16px', fontWeight: 600 }}>Luxury Villa in Lekki</td>
-                      <td style={{ padding: '16px', color: '#94a3b8' }}>Nov 15 - Nov 20, 2026</td>
-                      <td style={{ padding: '16px' }}><span style={{ color: '#d97706', background: '#fef3c7', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600 }}>Confirmed</span></td>
-                      <td style={{ padding: '16px', fontWeight: 600 }}>₦1,500,000</td>
-                    </tr>
+                    {bookings.map((booking) => (
+                      <tr key={booking.id} style={{ borderBottom: '1px solid #1e293b' }}>
+                        <td style={{ padding: '16px', fontWeight: 600 }}>{booking.car_name}</td>
+                        <td style={{ padding: '16px', color: '#94a3b8' }}>
+                          {new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </td>
+                        <td style={{ padding: '16px' }}>
+                          <span style={{ 
+                            color: booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'confirmed' ? '#4ade80' : '#facc15', 
+                            background: booking.status.toLowerCase() === 'completed' || booking.status.toLowerCase() === 'confirmed' ? 'rgba(22, 163, 74, 0.15)' : 'rgba(250, 204, 21, 0.15)', 
+                            padding: '4px 8px', 
+                            borderRadius: '4px', 
+                            fontSize: '0.8rem', 
+                            fontWeight: 600,
+                            textTransform: 'capitalize'
+                          }}>
+                            {booking.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px', fontWeight: 600 }}>₦{booking.amount?.toLocaleString()}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

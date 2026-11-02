@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // This checks if the URL contains 'customer'
+  // Check if we are on the customer login page based on the URL
   const isCustomerLogin = location.pathname.includes('customer');
 
   const defaultUser = 'admin';
@@ -31,17 +31,19 @@ export default function Login() {
     e.preventDefault();
     setError('');
 
-    // Debugging log to check if it knows you are a customer
-    console.log("Is Customer Login?", isCustomerLogin);
-
     if (isCustomerLogin) {
       // === CUSTOMER LOGIN ===
       if (username && password) {
+        // Determine the email to save. If they typed an email, use it. If not, append @gmail.com
+        const formattedEmail = username.includes('@') ? username : `${username}@gmail.com`;
+        // Determine display name (remove the @gmail.com part for the UI)
+        const displayName = username.includes('@') ? username.split('@')[0] : username;
+
         localStorage.setItem('customer_auth', 'true');
-        localStorage.setItem('customer_name', username);
-        localStorage.setItem('customer_email', username + '@gmail.com');
+        localStorage.setItem('customer_name', displayName);
+        localStorage.setItem('customer_email', formattedEmail);
         
-        // This forces a redirect to the dashboard
+        // Force redirect to the dashboard
         window.location.href = '/dashboard'; 
       } else {
         setError('Please enter your details.');
@@ -78,15 +80,15 @@ export default function Login() {
         <div className="login-form-container">
           <div className="login-header">
             <h2>{isCustomerLogin ? 'Customer Sign In' : 'Admin Login'}</h2>
-            <p>{isCustomerLogin ? 'Enter your details to access your dashboard.' : 'Please enter your admin credentials to continue.'}</p>
+            <p>{isCustomerLogin ? 'Enter your email and password to access your dashboard.' : 'Please enter your admin credentials to continue.'}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="premium-form">
             <div className="premium-input-group">
-              <label>{isCustomerLogin ? 'Email / Username' : 'Admin Username'}</label>
+              <label>{isCustomerLogin ? 'Email Address' : 'Admin Username'}</label>
               <input 
-                type="text" 
-                placeholder={isCustomerLogin ? "e.g. giftotuuobinna1995" : "Enter admin username"} 
+                type={isCustomerLogin ? "email" : "text"} 
+                placeholder={isCustomerLogin ? "e.g. giftotuuobinna1995@gmail.com" : "Enter admin username"} 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
                 autoFocus
