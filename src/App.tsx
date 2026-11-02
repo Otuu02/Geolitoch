@@ -4,7 +4,7 @@ import './App.css';
 import AdminPanel from './AdminPanel';
 import Login from './Login';
 import Layout from './Layout';
-import { supabase } from './supabase'; // <-- IMPORTED SUPABASE
+import { supabase } from './supabase'; 
 import { 
   FleetPage, AirportTransferPage, TeamPage, AboutPage, 
   BlogPage, BlogPostPage, FAQPage, ContactPage, PartnersPage,
@@ -191,10 +191,12 @@ function HomePage({ listings }: any) {
                 </div>
                 <div className="card-content">
                   <h3>{listing.title}</h3>
-                  <div className="specs-row">
-                    <span><i className="icon">👤</i> 5 Seats</span>
-                    <span><i className="icon">🚪</i> 4 Doors</span>
-                    <span><i className="icon">⚙️</i> Auto</span>
+                  {/* REPLACED HARDCODED SPECS WITH REAL DESCRIPTION */}
+                  <div className="specs-row" style={{ padding: '12px 0', display: 'block', minHeight: 'auto' }}>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '8px', fontWeight: 500, lineHeight: 1.4 }}>
+                      <i className="icon" style={{ marginTop: '2px' }}>📋</i> 
+                      {listing.detail}
+                    </span>
                   </div>
                   <div className="card-footer">
                     <div className="price-box">
@@ -251,10 +253,12 @@ function HomePage({ listings }: any) {
                 </div>
                 <div className="card-content">
                   <h3>{listing.title}</h3>
-                  <div className="specs-row">
-                    <span><i className="icon">🛏</i> 3 Bed</span>
-                    <span><i className="icon">🛁</i> 2 Bath</span>
-                    <span><i className="icon">📐</i> 1450 Sqf</span>
+                  {/* REPLACED HARDCODED SPECS WITH REAL DESCRIPTION */}
+                  <div className="specs-row" style={{ padding: '12px 0', display: 'block', minHeight: 'auto' }}>
+                    <span style={{ color: '#64748b', fontSize: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '8px', fontWeight: 500, lineHeight: 1.4 }}>
+                      <i className="icon" style={{ marginTop: '2px' }}>🏠</i> 
+                      {listing.detail}
+                    </span>
                   </div>
                   <div className="card-footer">
                     <div className="price-box">
@@ -347,7 +351,6 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={
           <ProtectedRoute>
-            {/* REMOVED setListings PROP HERE */}
             <AdminPanel listings={listings} />
           </ProtectedRoute>
         } />
