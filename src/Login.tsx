@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Check if we are on the customer login page based on the URL
+  // This checks if the URL contains 'customer'
   const isCustomerLogin = location.pathname.includes('customer');
 
   const defaultUser = 'admin';
@@ -31,32 +31,34 @@ export default function Login() {
     e.preventDefault();
     setError('');
 
+    // Debugging log to check if it knows you are a customer
+    console.log("Is Customer Login?", isCustomerLogin);
+
     if (isCustomerLogin) {
-      // === CUSTOMER LOGIN LOGIC ===
-      // For testing, let any email/password work for customers.
-      // (Later, you can connect this to Supabase Auth)
+      // === CUSTOMER LOGIN ===
       if (username && password) {
         localStorage.setItem('customer_auth', 'true');
-        localStorage.setItem('customer_name', username); // Save their name
-        navigate('/dashboard'); // Send to Customer Dashboard
+        localStorage.setItem('customer_name', username);
+        localStorage.setItem('customer_email', username + '@gmail.com');
+        
+        // This forces a redirect to the dashboard
+        window.location.href = '/dashboard'; 
       } else {
         setError('Please enter your details.');
       }
     } else {
-      // === ADMIN LOGIN LOGIC ===
+      // === ADMIN LOGIN ===
       if (username.toLowerCase() === storedUser.toLowerCase() && hashPassword(password) === storedHash) {
         localStorage.setItem('geolitoch_auth', 'true');
-        navigate('/admin');
+        navigate('/admin'); 
       } else {
-        setError('Invalid admin username or password. Please try again.');
+        setError('Invalid admin username or password.');
       }
     }
   };
 
   return (
     <div className="premium-login-wrapper">
-      
-      {/* LEFT SIDE: BRANDING & IMAGE */}
       <div className="login-left">
         <div className="login-left-overlay"></div>
         <div className="login-left-content">
@@ -72,12 +74,11 @@ export default function Login() {
         </div>
       </div>
 
-      {/* RIGHT SIDE: LOGIN FORM */}
       <div className="login-right">
         <div className="login-form-container">
           <div className="login-header">
             <h2>{isCustomerLogin ? 'Customer Sign In' : 'Admin Login'}</h2>
-            <p>{isCustomerLogin ? 'Enter your email to access your dashboard.' : 'Please enter your admin credentials to continue.'}</p>
+            <p>{isCustomerLogin ? 'Enter your details to access your dashboard.' : 'Please enter your admin credentials to continue.'}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="premium-form">
@@ -117,7 +118,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-
     </div>
   );
 }
