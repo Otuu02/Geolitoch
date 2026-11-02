@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const hashPassword = (str: string) => {
   let hash = 0;
@@ -12,7 +12,11 @@ const hashPassword = (str: string) => {
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   
+  // Check if we are on the customer login page based on the URL
+  const isCustomerLogin = location.pathname.includes('customer');
+
   const defaultUser = 'admin';
   const defaultHash = hashPassword('admin123');
   
@@ -27,11 +31,25 @@ export default function Login() {
     e.preventDefault();
     setError('');
 
-    if (username.toLowerCase() === storedUser.toLowerCase() && hashPassword(password) === storedHash) {
-      localStorage.setItem('geolitoch_auth', 'true');
-      navigate('/admin');
+    if (isCustomerLogin) {
+      // === CUSTOMER LOGIN LOGIC ===
+      // For testing, let any email/password work for customers.
+      // (Later, you can connect this to Supabase Auth)
+      if (username && password) {
+        localStorage.setItem('customer_auth', 'true');
+        localStorage.setItem('customer_name', username); // Save their name
+        navigate('/dashboard'); // Send to Customer Dashboard
+      } else {
+        setError('Please enter your details.');
+      }
     } else {
-      setError('Invalid username or password. Please try again.');
+      // === ADMIN LOGIN LOGIC ===
+      if (username.toLowerCase() === storedUser.toLowerCase() && hashPassword(password) === storedHash) {
+        localStorage.setItem('geolitoch_auth', 'true');
+        navigate('/admin');
+      } else {
+        setError('Invalid admin username or password. Please try again.');
+      }
     }
   };
 
@@ -49,8 +67,8 @@ export default function Login() {
               <p>ENTERPRISES</p>
             </div>
           </div>
-          <h2>Manage your fleet & properties with ease.</h2>
-          <p>The official control panel for Geolitoch Enterprises administrators.</p>
+          <h2>{isCustomerLogin ? 'Welcome back to Geolitoch.' : 'Manage your fleet & properties with ease.'}</h2>
+          <p>{isCustomerLogin ? 'Log in to view your bookings and manage your profile.' : 'The official control panel for Geolitoch Enterprises administrators.'}</p>
         </div>
       </div>
 
@@ -58,16 +76,16 @@ export default function Login() {
       <div className="login-right">
         <div className="login-form-container">
           <div className="login-header">
-            <h2>Welcome Back</h2>
-            <p>Please enter your admin credentials to continue.</p>
+            <h2>{isCustomerLogin ? 'Customer Sign In' : 'Admin Login'}</h2>
+            <p>{isCustomerLogin ? 'Enter your email to access your dashboard.' : 'Please enter your admin credentials to continue.'}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="premium-form">
             <div className="premium-input-group">
-              <label>Username</label>
+              <label>{isCustomerLogin ? 'Email / Username' : 'Admin Username'}</label>
               <input 
                 type="text" 
-                placeholder="Enter admin username" 
+                placeholder={isCustomerLogin ? "e.g. giftotuuobinna1995" : "Enter admin username"} 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
                 autoFocus
