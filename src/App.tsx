@@ -12,8 +12,6 @@ import {
   CheckoutPage
 } from './Pages'; 
 
-const COMPANY_NAME = 'Geolitoch Enterprises';
-
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2000&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=2000&auto=format&fit=crop',
