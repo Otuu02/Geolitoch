@@ -511,7 +511,6 @@ export const ContactPage = () => {
                 </a>
               </div>
             </div>
-
             {/* Location/WhatsApp */}
             <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
               <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
@@ -766,7 +765,7 @@ export const CheckoutPage = () => {
   const params = new URLSearchParams(window.location.search);
   const carTitle = params.get('car') || 'Vehicle Rental';
   const carPrice = parseFloat(params.get('price') || '0');
-  const totalAmount = carPrice + 50000; // Adds 50k deposit
+  const totalAmount = carPrice; // NO DEPOSIT ADDED
 
   // Paystack Config
   const config = {
@@ -857,10 +856,6 @@ export const CheckoutPage = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#475569' }}>
               <span>{carTitle}</span>
               <span>₦{carPrice.toLocaleString()}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#475569' }}>
-              <span>Security Deposit</span>
-              <span>₦50,000</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--navy)' }}>
               <span>Total</span>
