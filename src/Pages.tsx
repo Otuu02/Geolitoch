@@ -88,7 +88,12 @@ export const FleetPage = ({ listings = [] }: any) => {
                       <span className="price-value">₦{listing.price.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
-                    <Link to="/" className="btn-book" style={{ textDecoration: 'none' }}>
+                    {/* UPDATED: Routes to Checkout instead of Homepage */}
+                    <Link 
+                      to={`/checkout?car=${encodeURIComponent(listing.title)}&price=${listing.price}`} 
+                      className="btn-book" 
+                      style={{ textDecoration: 'none' }}
+                    >
                       BOOK NOW →
                     </Link>
                   </div>

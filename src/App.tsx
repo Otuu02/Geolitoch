@@ -122,7 +122,7 @@ function HomePage({ listings }: { listings: Listing[] }) {
     const encodedMessage = encodeURIComponent(message);
     const phoneNumber = '2348038872570'; 
     
-    // Open WhatsApp
+    // Open WhatsApp (Only for the custom multi-day/interstate booking widget)
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
 
@@ -410,7 +410,11 @@ function HomePage({ listings }: { listings: Listing[] }) {
                       <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
-                    <button className="btn-book" onClick={() => window.open(`https://wa.me/2348038872570?text=Hi, I want to book the ${listing.title}`, '_blank')}>
+                    {/* UPDATED: Routes to Checkout instead of WhatsApp */}
+                    <button 
+                      className="btn-book" 
+                      onClick={() => window.location.href = `/checkout?car=${encodeURIComponent(listing.title)}&price=${listing.price}`}
+                    >
                       BOOK NOW →
                     </button>
                   </div>
@@ -471,7 +475,11 @@ function HomePage({ listings }: { listings: Listing[] }) {
                       <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/night</span>
                     </div>
-                    <button className="btn-book" onClick={() => window.open(`https://wa.me/2348038872570?text=Hi, I want to book the ${listing.title}`, '_blank')}>
+                    {/* UPDATED: Routes to Checkout instead of WhatsApp */}
+                    <button 
+                      className="btn-book" 
+                      onClick={() => window.location.href = `/checkout?car=${encodeURIComponent(listing.title)}&price=${listing.price}`}
+                    >
                       BOOK NOW →
                     </button>
                   </div>
