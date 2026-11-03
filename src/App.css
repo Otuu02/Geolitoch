@@ -501,4 +501,110 @@ body {
     flex: 1;
     justify-content: center;
   }
+}/* =========================================
+   MOBILE RESPONSIVENESS FIXES
+   ========================================= */
+
+@media (max-width: 1024px) {
+  /* Fix the hero section stacking */
+  .hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+  
+  .booking-widget {
+    width: 100%;
+    max-width: 500px;
+    margin-top: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 1. Header Fixes */
+  .header-container {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .brand h1 {
+    font-size: 1.2rem;
+  }
+  
+  .brand p {
+    font-size: 0.6rem;
+  }
+  
+  .logo-icon, .animated-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Fix the long "Book Now" button */
+  .phone-btn {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .sign-in-btn {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Hide the large text in the sign in button on small screens */
+  .hide-on-mobile {
+    display: none;
+  }
+
+  /* Mobile Menu Toggle */
+  .header-nav {
+    display: none; /* Hidden by default on mobile */
+  }
+  
+  .header-nav.mobile-open {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--navy);
+    padding: 16px 0;
+    gap: 12px;
+  }
+
+  /* 2. Hero & Widget Fixes */
+  .hero-section {
+    padding: 60px 16px 40px;
+    min-height: auto;
+  }
+  
+  .hero-text h2 {
+    font-size: 2.8rem;
+  }
+
+  .booking-widget {
+    width: 100% !important;
+    margin-top: 20px;
+  }
+  
+  .widget-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* 3. Grid Fixes */
+  .grid {
+    grid-template-columns: 1fr; /* Force 1 column on mobile */
+    gap: 20px;
+  }
+
+  /* 4. Checkout Page Stacking */
+  .store-container {
+    padding: 40px 16px;
+  }
+
+  /* Order summary card stacking */
+  div[style*="display: grid"][style*="minmax(320px, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
 }
