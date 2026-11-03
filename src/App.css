@@ -404,16 +404,14 @@ body {
 .animated-logo:hover { transform: scale(1.1) rotate(5deg); }
 @keyframes pulse-glow {
   0% { box-shadow: 0 0 0 0 rgba(212, 163, 115, 0.4); transform: scale(1); }
-  50% { box-shadow: 0 0 15px 5px rgba(212, 163, 115, 0.6); transform: scale(1.05);
-  }
+  50% { box-shadow: 0 0 15px 5px rgba(212, 163,115, 0.6); transform: scale(1.05); }
   100% { box-shadow: 0 0 0 0 rgba(212, 163, 115, 0); transform: scale(1); }
 }
 
 /* =========================================
-   MOBILE RESPONSIVE HEADER
+   MOBILE RESPONSIVENESS FIXES
    ========================================= */
 
-/* Hide hamburger by default on desktop */
 .mobile-menu-btn {
   display: none;
   background: transparent;
@@ -490,86 +488,19 @@ body {
   .header-actions {
     display: flex;
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end; /* Push buttons to the right */
     align-items: center;
     gap: 12px;
   }
 
+  /* Fix button shapes to not stretch too long */
   .sign-in-btn, .phone-btn {
-    padding: 10px 16px;
-    font-size: 0.85rem;
-    flex: 1;
-    justify-content: center;
-  }
-}/* =========================================
-   MOBILE RESPONSIVENESS FIXES
-   ========================================= */
-
-@media (max-width: 1024px) {
-  /* Fix the hero section stacking */
-  .hero-content {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: 40px;
-  }
-  
-  .booking-widget {
-    width: 100%;
-    max-width: 500px;
-    margin-top: 30px;
-  }
-}
-
-@media (max-width: 768px) {
-  /* 1. Header Fixes */
-  .header-container {
-    padding: 12px 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  
-  .brand h1 {
-    font-size: 1.2rem;
-  }
-  
-  .brand p {
-    font-size: 0.6rem;
-  }
-  
-  .logo-icon, .animated-logo {
-    width: 32px;
-    height: 32px;
-  }
-
-  /* Fix the long "Book Now" button */
-  .phone-btn {
     padding: 8px 16px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-  }
-
-  .sign-in-btn {
-    padding: 8px 12px;
-    font-size: 0.75rem;
-  }
-
-  /* Hide the large text in the sign in button on small screens */
-  .hide-on-mobile {
-    display: none;
-  }
-
-  /* Mobile Menu Toggle */
-  .header-nav {
-    display: none; /* Hidden by default on mobile */
-  }
-  
-  .header-nav.mobile-open {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    background: var(--navy);
-    padding: 16px 0;
-    gap: 12px;
+    font-size: 0.85rem;
+    flex: 0 1 auto; /* Prevent full width stretch */
+    width: auto;
+    height: 36px;
+    justify-content: center;
   }
 
   /* 2. Hero & Widget Fixes */
@@ -584,6 +515,7 @@ body {
 
   .booking-widget {
     width: 100% !important;
+    max-width: 100%;
     margin-top: 20px;
   }
   
