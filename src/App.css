@@ -540,3 +540,42 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================
+   FINAL HERO & WIDGET MOBILE FIX
+   ========================================= */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 100px 16px 40px !important;
+    height: auto !important;
+  }
+
+  .hero-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 30px !important;
+  }
+
+  .hero-text {
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+
+  .hero-text h2 {
+    font-size: 3rem !important;
+  }
+
+  .booking-widget {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    right: 0 !important;
+  }
+
+  /* Stack the widget inputs vertically */
+  .widget-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+}
