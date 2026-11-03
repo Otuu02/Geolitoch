@@ -88,9 +88,9 @@ export const FleetPage = ({ listings = [] }: any) => {
                       <span className="price-value">₦{listing.price.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
-                    {/* UPDATED: Routes to Checkout instead of Homepage */}
+                    {/* UPDATED: Routes to Booking Details Page */}
                     <Link 
-                      to={`/checkout?car=${encodeURIComponent(listing.title)}&price=${listing.price}`} 
+                      to={`/booking-details?car=${encodeURIComponent(listing.title)}&price=${listing.price}`} 
                       className="btn-book" 
                       style={{ textDecoration: 'none' }}
                     >
@@ -674,34 +674,96 @@ export const PartnersPage = () => (
   </div>
 );
 
+// === BOOKING DETAILS PAGE ===
+export const BookingDetailsPage = () => {
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+
+  const params = new URLSearchParams(window.location.search);
+  const carTitle = params.get('car') || 'Vehicle Rental';
+  const carPrice = params.get('price') || '0';
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const message = `*NEW BOOKING DETAILS - GEOLITOCH* 🚘\n\n*Customer Name:* ${formData.name}\n*Phone:* ${formData.phone}\n*Email:* ${formData.email}\n\n*Vehicle Requested:* ${carTitle}\n*Price:* ₦${Number(carPrice).toLocaleString()}\n\n_Please confirm this booking._`;
+    
+    window.open(`https://wa.me/2348038872570?text=${encodeURIComponent(message)}`, '_blank');
+
+    localStorage.setItem('customer_name', formData.name);
+    localStorage.setItem('customer_email', formData.email);
+    localStorage.setItem('customer_phone', formData.phone);
+
+    window.location.href = `/checkout?car=${encodeURIComponent(carTitle)}&price=${carPrice}`;
+  };
+
+  return (
+    <div style={{ paddingTop: '120px', paddingBottom: '80px', background: '#f8fafc', minHeight: '80vh' }}>
+      <div className="store-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        
+        <div className="section-heading" style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <span className="subtitle">— STEP 1 OF 2</span>
+          <h2>Enter Your <span className="italic-gold">Details</span></h2>
+          <p style={{ margin: '0 auto', color: '#64748b' }}>
+            You are booking the <strong>{carTitle}</strong>. Please provide your details so our team can contact you.
+          </p>
+        </div>
+
+        <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569' }}>Full Name *</label>
+              <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569' }}>Phone Number *</label>
+              <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569' }}>Email Address *</label>
+              <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
+            </div>
+
+            <button type="submit" className="btn-book" style={{ padding: '18px', fontSize: '1rem', marginTop: '10px' }}>
+              PROCEED TO PAYMENT →
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // === CHECKOUT / PAYMENT PAGE ===
 export const CheckoutPage = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Get customer email for Paystack
+  const customerName = localStorage.getItem('customer_name') || 'Guest';
   const customerEmail = localStorage.getItem('customer_email') || 'guest@geolitoch.com';
+  const customerPhone = localStorage.getItem('customer_phone') || 'N/A';
 
-  // Paystack Configuration
+  const params = new URLSearchParams(window.location.search);
+  const carTitle = params.get('car') || 'Vehicle Rental';
+  const carPrice = parseFloat(params.get('price') || '0');
+  const totalAmount = carPrice + 50000;
+
   const config = {
     reference: (new Date()).getTime().toString(),
     email: customerEmail,
-    amount: 350000 * 100, // Amount is in Kobo. (₦350,000 total)
-    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5', // MY LIVE PUBLIC KEY
+    amount: totalAmount * 100,
+    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5',
   };
 
   const initializePayment = usePaystackPayment(config);
 
   const onSuccess = async (reference: any) => {
-    // Save booking to Supabase
-    const params = new URLSearchParams(window.location.search);
-    const carTitle = params.get('car') || 'Vehicle Rental';
-    const carPrice = parseFloat(params.get('price') || '350000');
-
     const { error } = await supabase.from('bookings').insert([{
       customer_email: customerEmail,
-      customer_name: customerEmail.split('@')[0], 
+      customer_name: customerName, 
+      customer_phone: customerPhone,
       car_name: carTitle,
-      amount: carPrice,
+      amount: totalAmount,
       status: 'confirmed',
       booking_date: new Date().toISOString(),
       payment_reference: reference.reference
@@ -715,19 +777,14 @@ export const CheckoutPage = () => {
     }
   };
 
-  const onClose = () => {
-    alert('Payment window closed.');
-  };
+  const onClose = () => alert('Payment window closed.');
 
   if (isSuccess) {
     return (
       <div style={{ paddingTop: '120px', paddingBottom: '100px', textAlign: 'center', background: '#f8fafc', minHeight: '80vh' }}>
-        <div style={{ background: '#fff', padding: '50px', borderRadius: '12px', maxWidth: '500px', margin: '0 auto', border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-          <div style={{ background: '#dcfce7', color: '#16a34a', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          </div>
+        <div style={{ background: '#fff', padding: '50px', borderRadius: '12px', maxWidth: '500px', margin: '0 auto', border: '1px solid #e2e8f0' }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)', fontSize: '2rem', marginBottom: '10px' }}>Payment Successful!</h2>
-          <p style={{ color: '#64748b', marginBottom: '30px' }}>Your booking is confirmed. A Geolitoch representative will contact you shortly with your vehicle details.</p>
+          <p style={{ color: '#64748b', marginBottom: '30px' }}>Thank you, {customerName}. Your booking for the <strong>{carTitle}</strong> is confirmed.</p>
           <Link to="/dashboard" className="btn-book" style={{ display: 'inline-block', textDecoration: 'none', padding: '14px 32px' }}>Go to Dashboard</Link>
         </div>
       </div>
@@ -735,54 +792,43 @@ export const CheckoutPage = () => {
   }
 
   return (
-    <div style={{ paddingTop: '80px', paddingBottom: '80px', background: '#f8fafc' }}>
-      <div className="store-container" style={{ paddingTop: '0' }}>
+    <div style={{ paddingTop: '120px', paddingBottom: '80px', background: '#f8fafc', minHeight: '80vh' }}>
+      <div className="store-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
         
         <div className="section-heading" style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <span className="subtitle">— SECURE CHECKOUT</span>
-          <h2>Complete Your <span className="italic-gold">Booking</span></h2>
+          <span className="subtitle">— STEP 2 OF 2</span>
+          <h2>Complete <span className="italic-gold">Payment</span></h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px', maxWidth: '900px', margin: '0 auto' }}>
+        <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
           
-          {/* Payment Info */}
-          <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', textAlign: 'center' }}>
-            <h3 style={{ color: 'var(--navy)', fontSize: '1.4rem', marginBottom: '20px', borderBottom: '2px solid var(--gold)', paddingBottom: '10px', display: 'inline-block' }}>Ready to Pay</h3>
-            <p style={{ color: '#64748b', marginBottom: '30px' }}>Click the button below to securely pay with your card, bank transfer, or USSD via Paystack.</p>
-            
-            <button 
-              onClick={() => {
-                // This triggers the Paystack popup
-                initializePayment({ onSuccess, onClose });
-              }}
-              className="btn-book" 
-              style={{ padding: '18px', fontSize: '1.1rem', width: '100%', cursor: 'pointer' }}
-            >
-              Pay ₦350,000 with Paystack
-            </button>
-          </div>
-
-          {/* Order Summary */}
-          <div style={{ background: 'var(--navy)', padding: '40px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', marginBottom: '20px', color: 'var(--gold)' }}>Order Summary</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px' }}>
-              <span style={{ color: '#cbd5e1' }}>Vehicle Rental</span>
-              <span>₦300,000</span>
+          <div style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #e2e8f0' }}>
+            <h3 style={{ color: 'var(--navy)', marginBottom: '15px' }}>Order Summary</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#475569' }}>
+              <span>{carTitle}</span>
+              <span>₦{carPrice.toLocaleString()}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px' }}>
-              <span style={{ color: '#cbd5e1' }}>Security Deposit</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: '#475569' }}>
+              <span>Security Deposit</span>
               <span>₦50,000</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px' }}>
-              <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Total</span>
-              <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--gold)' }}>₦350,000</span>
-            </div>
-            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '15px', borderRadius: '8px', fontSize: '0.85rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              Secure 256-bit SSL encrypted payment.
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--navy)' }}>
+              <span>Total</span>
+              <span>₦{totalAmount.toLocaleString()}</span>
             </div>
           </div>
 
+          <button 
+            onClick={() => initializePayment({ onSuccess, onClose })}
+            className="btn-book" 
+            style={{ padding: '18px', fontSize: '1rem', width: '100%', cursor: 'pointer' }}
+          >
+            Pay ₦{totalAmount.toLocaleString()} with Paystack
+          </button>
+          
+          <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#64748b', marginTop: '15px' }}>
+            Secure 256-bit SSL encrypted payment.
+          </p>
         </div>
       </div>
     </div>

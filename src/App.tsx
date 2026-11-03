@@ -9,7 +9,7 @@ import { supabase } from './supabase';
 import { 
   FleetPage, AirportTransferPage, TeamPage, AboutPage, 
   BlogPage, BlogPostPage, FAQPage, ContactPage, PartnersPage,
-  CheckoutPage
+  CheckoutPage, BookingDetailsPage // <-- ADDED BookingDetailsPage HERE
 } from './Pages'; 
 
 const HERO_IMAGES = [
@@ -410,10 +410,10 @@ function HomePage({ listings }: { listings: Listing[] }) {
                       <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
-                    {/* UPDATED: Routes to Checkout instead of WhatsApp */}
+                    {/* UPDATED: Routes to Booking Details Form first */}
                     <button 
                       className="btn-book" 
-                      onClick={() => window.location.href = `/checkout?car=${encodeURIComponent(listing.title)}&price=${listing.price}`}
+                      onClick={() => window.location.href = `/booking-details?car=${encodeURIComponent(listing.title)}&price=${listing.price}`}
                     >
                       BOOK NOW →
                     </button>
@@ -475,10 +475,10 @@ function HomePage({ listings }: { listings: Listing[] }) {
                       <span className="price-value">₦{listing.price?.toLocaleString()}</span>
                       <span className="price-period">/night</span>
                     </div>
-                    {/* UPDATED: Routes to Checkout instead of WhatsApp */}
+                    {/* UPDATED: Routes to Booking Details Form first */}
                     <button 
                       className="btn-book" 
-                      onClick={() => window.location.href = `/checkout?car=${encodeURIComponent(listing.title)}&price=${listing.price}`}
+                      onClick={() => window.location.href = `/booking-details?car=${encodeURIComponent(listing.title)}&price=${listing.price}`}
                     >
                       BOOK NOW →
                     </button>
@@ -541,6 +541,8 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/fleet-partners" element={<PartnersPage />} />
           
+          {/* ADDED THE BOOKING DETAILS ROUTE HERE */}
+          <Route path="/booking-details" element={<BookingDetailsPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
         </Route>
 
