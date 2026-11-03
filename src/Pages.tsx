@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { supabase } from './supabase';
+import { usePaystackPayment } from 'react-paystack';
 
 // A reusable wrapper for pages
 const PageLayout = ({ title, subtitle, children }: any) => (
@@ -501,7 +502,9 @@ export const ContactPage = () => {
               </div>
               <div>
                 <h4 style={{ color: 'var(--navy)', fontSize: '1.2rem', marginBottom: '8px' }}>Email Us</h4>
-                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>geolitoch@gmail.com</a>
+                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>
+                  geolitoch@gmail.com
+                </a>
               </div>
             </div>
 
@@ -668,36 +671,47 @@ export const PartnersPage = () => (
 
 // === CHECKOUT / PAYMENT PAGE ===
 export const CheckoutPage = () => {
-  const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-    
-    const loggedInUser = localStorage.getItem('geolitoch_customer') || 'guest@geolitoch.com';
+  // Get customer email for Paystack
+  const customerEmail = localStorage.getItem('customer_email') || 'guest@geolitoch.com';
+
+  // Paystack Configuration
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: customerEmail,
+    amount: 350000 * 100, // Amount is in Kobo. (₦350,000 total)
+    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5', // YOUR LIVE PUBLIC KEY
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
+  const onSuccess = async (reference: any) => {
+    // Save booking to Supabase
     const params = new URLSearchParams(window.location.search);
     const carTitle = params.get('car') || 'Vehicle Rental';
     const carPrice = parseFloat(params.get('price') || '350000');
 
     const { error } = await supabase.from('bookings').insert([{
-      customer_email: loggedInUser,
-      customer_name: loggedInUser.split('@')[0], 
+      customer_email: customerEmail,
+      customer_name: customerEmail.split('@')[0], 
       car_name: carTitle,
       amount: carPrice,
       status: 'confirmed',
-      booking_date: new Date().toISOString()
+      booking_date: new Date().toISOString(),
+      payment_reference: reference.reference
     }]);
 
     if (error) {
       console.error(error);
       alert("Error saving booking: " + error.message);
-    }
-
-    setTimeout(() => {
-      setIsProcessing(false);
+    } else {
       setIsSuccess(true);
-    }, 2000);
+    }
+  };
+
+  const onClose = () => {
+    alert('Payment window closed.');
   };
 
   if (isSuccess) {
@@ -726,41 +740,21 @@ export const CheckoutPage = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px', maxWidth: '900px', margin: '0 auto' }}>
           
-          {/* Payment Form */}
-          <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-            <h3 style={{ color: 'var(--navy)', fontSize: '1.4rem', marginBottom: '20px', borderBottom: '2px solid var(--gold)', paddingBottom: '10px', display: 'inline-block' }}>Payment Details</h3>
+          {/* Payment Info */}
+          <div style={{ background: '#fff', padding: '40px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', textAlign: 'center' }}>
+            <h3 style={{ color: 'var(--navy)', fontSize: '1.4rem', marginBottom: '20px', borderBottom: '2px solid var(--gold)', paddingBottom: '10px', display: 'inline-block' }}>Ready to Pay</h3>
+            <p style={{ color: '#64748b', marginBottom: '30px' }}>Click the button below to securely pay with your card, bank transfer, or USSD via Paystack.</p>
             
-            <form onSubmit={handlePayment} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Cardholder Name</label>
-                <input type="text" placeholder="Name on card" required style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Card Number</label>
-                <input type="text" placeholder="0000 0000 0000 0000" required maxLength={19} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
-              </div>
-
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>Expiry Date</label>
-                  <input type="text" placeholder="MM/YY" required maxLength={5} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>CVV</label>
-                  <input type="text" placeholder="123" required maxLength={3} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                className="btn-book" 
-                disabled={isProcessing}
-                style={{ padding: '18px', fontSize: '1rem', marginTop: '10px', opacity: isProcessing ? 0.7 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
-              >
-                {isProcessing ? 'Processing Payment...' : 'Pay ₦300,000'}
-              </button>
-            </form>
+            <button 
+              onClick={() => {
+                // This triggers the Paystack popup
+                initializePayment({ onSuccess, onClose });
+              }}
+              className="btn-book" 
+              style={{ padding: '18px', fontSize: '1.1rem', width: '100%', cursor: 'pointer' }}
+            >
+              Pay ₦350,000 with Paystack
+            </button>
           </div>
 
           {/* Order Summary */}
