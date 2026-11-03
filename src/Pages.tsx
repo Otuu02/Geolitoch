@@ -681,7 +681,7 @@ export const CheckoutPage = () => {
     reference: (new Date()).getTime().toString(),
     email: customerEmail,
     amount: 350000 * 100, // Amount is in Kobo. (₦350,000 total)
-    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5', // YOUR LIVE PUBLIC KEY
+    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5', // MY LIVE PUBLIC KEY
   };
 
   const initializePayment = usePaystackPayment(config);
