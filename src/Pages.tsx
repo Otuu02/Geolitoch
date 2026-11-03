@@ -88,7 +88,6 @@ export const FleetPage = ({ listings = [] }: any) => {
                       <span className="price-value">₦{listing.price.toLocaleString()}</span>
                       <span className="price-period">/12hrs</span>
                     </div>
-                    {/* UPDATED: Routes to Booking Details Page */}
                     <Link 
                       to={`/booking-details?car=${encodeURIComponent(listing.title)}&price=${listing.price}`} 
                       className="btn-book" 
@@ -506,8 +505,7 @@ export const ContactPage = () => {
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
               </div>
               <div>
-                <h4 style={{ color: 'var(--navy)', fontSize: '1.2rem', marginBottom: '8px' }}>Email Us</h4>
-                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>
+                <h4 style={{ color: 'var(--navy)', fontSize: '1.2rem', marginBottom: '8px' }}>Email Us</h4                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>
                   geolitoch@gmail.com
                 </a>
               </div>
@@ -677,22 +675,43 @@ export const PartnersPage = () => (
 // === BOOKING DETAILS PAGE ===
 export const BookingDetailsPage = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [isSending, setIsSending] = useState(false);
 
   const params = new URLSearchParams(window.location.search);
   const carTitle = params.get('car') || 'Vehicle Rental';
   const carPrice = params.get('price') || '0';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSending(true);
 
-    const message = `*NEW BOOKING DETAILS - GEOLITOCH* 🚘\n\n*Customer Name:* ${formData.name}\n*Phone:* ${formData.phone}\n*Email:* ${formData.email}\n\n*Vehicle Requested:* ${carTitle}\n*Price:* ₦${Number(carPrice).toLocaleString()}\n\n_Please confirm this booking._`;
-    
-    window.open(`https://wa.me/2348038872570?text=${encodeURIComponent(message)}`, '_blank');
-
+    // Save details for the Checkout page
     localStorage.setItem('customer_name', formData.name);
     localStorage.setItem('customer_email', formData.email);
     localStorage.setItem('customer_phone', formData.phone);
 
+    // Send email alert to the company BEFORE payment
+    try {
+      await fetch("https://formsubmit.co/ajax/geolitoch@gmail.com", {
+        method: "POST",
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            _subject: "New Booking Attempt - Geolitoch",
+            Name: formData.name,
+            Phone: formData.phone,
+            Email: formData.email,
+            Vehicle: carTitle,
+            Price: `₦${Number(carPrice).toLocaleString()}`
+        })
+      });
+    } catch (error) {
+      console.error("Email sending failed", error);
+    }
+
+    // Redirect to the secure Paystack payment page
     window.location.href = `/checkout?car=${encodeURIComponent(carTitle)}&price=${carPrice}`;
   };
 
@@ -725,8 +744,8 @@ export const BookingDetailsPage = () => {
               <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc' }} />
             </div>
 
-            <button type="submit" className="btn-book" style={{ padding: '18px', fontSize: '1rem', marginTop: '10px' }}>
-              PROCEED TO PAYMENT →
+            <button type="submit" className="btn-book" disabled={isSending} style={{ padding: '18px', fontSize: '1rem', marginTop: '10px', opacity: isSending ? 0.7 : 1 }}>
+              {isSending ? 'PROCESSING...' : 'PROCEED TO PAYMENT →'}
             </button>
           </form>
         </div>
@@ -746,18 +765,20 @@ export const CheckoutPage = () => {
   const params = new URLSearchParams(window.location.search);
   const carTitle = params.get('car') || 'Vehicle Rental';
   const carPrice = parseFloat(params.get('price') || '0');
-  const totalAmount = carPrice + 50000;
+  const totalAmount = carPrice + 50000; // Adds 50k deposit
 
+  // Paystack Config
   const config = {
     reference: (new Date()).getTime().toString(),
     email: customerEmail,
-    amount: totalAmount * 100,
-    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5',
+    amount: totalAmount * 100, // Kobo
+    publicKey: 'pk_live_7a358ea26ea5861b2ee0da1ceb5f38ff5d7ca9f5', 
   };
 
   const initializePayment = usePaystackPayment(config);
 
   const onSuccess = async (reference: any) => {
+    // 1. Save to Supabase
     const { error } = await supabase.from('bookings').insert([{
       customer_email: customerEmail,
       customer_name: customerName, 
@@ -773,6 +794,29 @@ export const CheckoutPage = () => {
       console.error(error);
       alert("Error saving booking: " + error.message);
     } else {
+      // 2. Send Final Payment Confirmation Email
+      try {
+        await fetch("https://formsubmit.co/ajax/geolitoch@gmail.com", {
+          method: "POST",
+          headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+              _subject: "✅ PAYMENT RECEIVED - Geolitoch Booking",
+              Customer: customerName,
+              Email: customerEmail,
+              Phone: customerPhone,
+              Vehicle: carTitle,
+              Total_Paid: `₦${totalAmount.toLocaleString()}`,
+              Reference: reference.reference
+          })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+
+      // 3. Set success state (which triggers the redirect to home)
       setIsSuccess(true);
     }
   };
@@ -780,12 +824,17 @@ export const CheckoutPage = () => {
   const onClose = () => alert('Payment window closed.');
 
   if (isSuccess) {
+    // Automatically redirect to Home Page after 3 seconds
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 3000);
+
     return (
       <div style={{ paddingTop: '120px', paddingBottom: '100px', textAlign: 'center', background: '#f8fafc', minHeight: '80vh' }}>
         <div style={{ background: '#fff', padding: '50px', borderRadius: '12px', maxWidth: '500px', margin: '0 auto', border: '1px solid #e2e8f0' }}>
           <h2 style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)', fontSize: '2rem', marginBottom: '10px' }}>Payment Successful!</h2>
-          <p style={{ color: '#64748b', marginBottom: '30px' }}>Thank you, {customerName}. Your booking for the <strong>{carTitle}</strong> is confirmed.</p>
-          <Link to="/dashboard" className="btn-book" style={{ display: 'inline-block', textDecoration: 'none', padding: '14px 32px' }}>Go to Dashboard</Link>
+          <p style={{ color: '#64748b', marginBottom: '30px' }}>Thank you, {customerName}. Your booking is confirmed. Redirecting you to the home page...</p>
+          <Link to="/" className="btn-book" style={{ display: 'inline-block', textDecoration: 'none', padding: '14px 32px' }}>Go to Home Now</Link>
         </div>
       </div>
     );
@@ -827,7 +876,7 @@ export const CheckoutPage = () => {
           </button>
           
           <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#64748b', marginTop: '15px' }}>
-            Secure 256-bit SSL encrypted payment.
+            Secure 256-bit SSL encrypted payment. Supports Card, Transfer, USSD.
           </p>
         </div>
       </div>
