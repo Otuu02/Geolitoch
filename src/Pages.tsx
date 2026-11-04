@@ -118,6 +118,11 @@ export const TeamPage = () => {
       name: 'Stella Osinachi Amadi',
       role: 'Head of Finance & Administration',
       image: '/team/Stella.jpeg', 
+    },
+    {
+      name: 'Nancy Nwachukwu',
+      role: 'Director of Operations',
+      image: '/team/Nancy.jpg', 
     }
   ];
 
@@ -137,7 +142,7 @@ export const TeamPage = () => {
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
           gap: '30px',
-          maxWidth: '800px',
+          maxWidth: '1000px', // Increased width so 3 cards fit perfectly
           margin: '0 auto'
         }}>
           {team.map((member, index) => (
@@ -511,6 +516,7 @@ export const ContactPage = () => {
                 </a>
               </div>
             </div>
+
             {/* Location/WhatsApp */}
             <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
               <div style={{ background: '#ecfdf5', padding: '12px', borderRadius: '50%', color: '#10b981' }}>
