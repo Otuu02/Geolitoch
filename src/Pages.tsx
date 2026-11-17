@@ -142,16 +142,28 @@ export const TeamPage = () => {
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
           gap: '30px',
-          maxWidth: '1000px', // Increased width so 3 cards fit perfectly
+          maxWidth: '1000px',
           margin: '0 auto'
         }}>
           {team.map((member, index) => (
             <div key={index} style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', textAlign: 'center' }}>
-              <img 
-                src={member.image} 
-                alt={member.name} 
-                style={{ width: '100%', height: '350px', objectFit: 'cover', objectPosition: 'top', borderBottom: '3px solid var(--gold)' }} 
-              />
+              <div style={{ 
+                width: '100%', 
+                aspectRatio: '4/5', 
+                overflow: 'hidden',
+                borderBottom: '3px solid var(--gold)'
+              }}>
+                <img 
+                  src={member.image} 
+                  alt={member.name} 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', 
+                    objectPosition: 'center 20%' 
+                  }} 
+                />
+              </div>
               <div style={{ padding: '24px' }}>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', color: 'var(--navy)', marginBottom: '8px' }}>
                   {member.name}
