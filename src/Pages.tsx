@@ -115,14 +115,14 @@ export const TeamPage = () => {
       image: '/team/Reginald.jpeg', 
     },
     {
-      name: 'Stella Osinachi Amadi',
-      role: 'Head of Finance & Administration',
-      image: '/team/Stella.jpeg', 
-    },
-    {
       name: 'Nancy Nwachukwu',
       role: 'Director of Operations',
       image: '/team/Nancy.jpg', 
+    },
+    {
+      name: 'Stella Osinachi Amadi',
+      role: 'Head of Finance & Administration',
+      image: '/team/Stella.jpeg', 
     }
   ];
 
@@ -511,8 +511,8 @@ export const ContactPage = () => {
               </div>
               <div>
                 <h4 style={{ color: 'var(--navy)', fontSize: '1.2rem', marginBottom: '8px' }}>Email Us</h4>
-                <a href="mailto:geolitoch1@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>
-                  geolitoch1@gmail.com
+                <a href="mailto:geolitoch@gmail.com" style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>
+                  geolitoch@gmail.com
                 </a>
               </div>
             </div>
@@ -663,12 +663,12 @@ export const PartnersPage = () => (
               </div>
               <div>
                 <p style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Email Us</p>
-                <a href="mailto:geolitoch1@gmail.com" style={{ color: '#fff', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.05rem' }}>geolitoch1@gmail.com</a>
+                <a href="mailto:geolitoch@gmail.com" style={{ color: '#fff', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.05rem' }}>geolitoch@gmail.com</a>
               </div>
             </div>
           </div>
 
-          <a href="mailto:geolitoch1@gmail.com" className="btn-book" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '16px', background: 'var(--gold)', color: 'var(--navy)', fontWeight: 'bold' }}>
+          <a href="mailto:geolitoch@gmail.com" className="btn-book" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '16px', background: 'var(--gold)', color: 'var(--navy)', fontWeight: 'bold' }}>
             Request a Corporate Quote
           </a>
         </div>
@@ -698,7 +698,7 @@ export const BookingDetailsPage = () => {
 
     // Send email alert to the company BEFORE payment
     try {
-      await fetch("https://formsubmit.co/ajax/geolitoch1@gmail.com", {
+      await fetch("https://formsubmit.co/ajax/geolitoch@gmail.com", {
         method: "POST",
         headers: { 
             'Content-Type': 'application/json',
@@ -802,7 +802,7 @@ export const CheckoutPage = () => {
     } else {
       // 2. Send Final Payment Confirmation Email
       try {
-        await fetch("https://formsubmit.co/ajax/geolitoch1@gmail.com", {
+        await fetch("https://formsubmit.co/ajax/geolitoch@gmail.com", {
           method: "POST",
           headers: { 
               'Content-Type': 'application/json',
