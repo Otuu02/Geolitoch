@@ -15,6 +15,10 @@ export default function AdminPanel({ listings }: any) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'all' | 'car' | 'house'>('all');
   
+  // --- PAGINATION STATE ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // State for the form
   const [formData, setFormData] = useState({
     id: '', type: 'car', title: '', price: '', detail: '', image: ''
@@ -178,10 +182,31 @@ export default function AdminPanel({ listings }: any) {
     }
   };
 
+  // --- FILTERING & PAGINATION LOGIC ---
   const filteredListings = listings.filter((l: any) => {
     if (activeTab === 'all') return true;
     return l.type === activeTab;
   });
+
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredListings.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
+
+  // Change page
+  const paginateNext = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+  const paginatePrev = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  // Handle tab change (reset page to 1)
+  const handleTabChange = (tab: 'all' | 'car' | 'house') => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
   return (
     <div style={{ background: '#f1f5f9', minHeight: '100vh', paddingBottom: '50px' }}>
@@ -307,23 +332,23 @@ export default function AdminPanel({ listings }: any) {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: INVENTORY LIST (NOW MOBILE RESPONSIVE CARDS) */}
+          {/* RIGHT COLUMN: INVENTORY LIST */}
           <div style={{ background: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '10px' }}>
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.4rem', color: 'var(--navy)', margin: 0 }}>Manage Inventory</h3>
               <div style={{ display: 'flex', gap: '5px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
-                <button onClick={() => setActiveTab('all')} style={{ padding: '6px 12px', border: 'none', background: activeTab === 'all' ? '#fff' : 'transparent', boxShadow: activeTab === 'all' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: activeTab === 'all' ? 'bold' : 'normal', fontSize: '0.85rem' }}>All</button>
-                <button onClick={() => setActiveTab('car')} style={{ padding: '6px 12px', border: 'none', background: activeTab === 'car' ? '#fff' : 'transparent', boxShadow: activeTab === 'car' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: activeTab === 'car' ? 'bold' : 'normal', fontSize: '0.85rem' }}>Cars</button>
-                <button onClick={() => setActiveTab('house')} style={{ padding: '6px 12px', border: 'none', background: activeTab === 'house' ? '#fff' : 'transparent', boxShadow: activeTab === 'house' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: activeTab === 'house' ? 'bold' : 'normal', fontSize: '0.85rem' }}>Houses</button>
+                <button onClick={() => handleTabChange('all')} style={{ padding: '6px 12px', border: 'none', background: activeTab === 'all' ? '#fff' : 'transparent', boxShadow: activeTab === 'all' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: activeTab === 'all' ? 'bold' : 'normal', fontSize: '0.85rem' }}>All</button>
+                <button onClick={() => handleTabChange('car')} style={{ padding: '6px 12px', border: 'none', background: activeTab === 'car' ? '#fff' : 'transparent', boxShadow: activeTab === 'car' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: activeTab === 'car' ? 'bold' : 'normal', fontSize: '0.85rem' }}>Cars</button>
+                <button onClick={() => handleTabChange('house')} style={{ padding: '6px 12px', border: 'none', background: activeTab === 'house' ? '#fff' : 'transparent', boxShadow: activeTab === 'house' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: activeTab === 'house' ? 'bold' : 'normal', fontSize: '0.85rem' }}>Houses</button>
               </div>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {filteredListings.length === 0 && (
+              {currentItems.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>No items found.</div>
               )}
               
-              {filteredListings.map((l: any) => (
+              {currentItems.map((l: any) => (
                 <div key={l.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '15px', border: '1px solid #e2e8f0', borderRadius: '10px', background: '#f8fafc' }}>
                   
                   {/* Top: Image & Title */}
@@ -376,12 +401,37 @@ export default function AdminPanel({ listings }: any) {
                 </div>
               ))}
             </div>
-            
+
+            {/* PAGINATION CONTROLS */}
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #e2e8f0' }}>
+                <button 
+                  onClick={paginatePrev} 
+                  disabled={currentPage === 1}
+                  style={{ padding: '8px 16px', background: currentPage === 1 ? '#e2e8f0' : '#fff', color: currentPage === 1 ? '#94a3b8' : 'var(--navy)', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                >
+                  ← Prev
+                </button>
+                
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button 
+                  onClick={paginateNext} 
+                  disabled={currentPage === totalPages}
+                  style={{ padding: '8px 16px', background: currentPage === totalPages ? '#e2e8f0' : '#fff', color: currentPage === totalPages ? '#94a3b8' : 'var(--navy)', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
 
-      {/* ADMIN SETTINGS MODAL (UNCHANGED) */}
+      {/* ADMIN SETTINGS MODAL */}
       {showReset && (
         <div className="modal-backdrop" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div className="modal" style={{ background: '#fff', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
