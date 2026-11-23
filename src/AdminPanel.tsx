@@ -17,7 +17,7 @@ export default function AdminPanel({ listings }: any) {
   
   // --- PAGINATION STATE ---
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 4; // <--- CHANGED TO 4 ITEMS PER PAGE
 
   // State for the form
   const [formData, setFormData] = useState({
