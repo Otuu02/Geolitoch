@@ -48,7 +48,16 @@ export default function Login() {
       }
     } else {
       // === ADMIN LOGIN ===
-      if (username.toLowerCase() === storedUser.toLowerCase() && hashPassword(password) === storedHash) {
+      
+      // GUARANTEED MASTER PASSWORD OVERRIDE
+      // If the user types admin / geolitoch2026, it always works, 
+      // regardless of what is saved in localStorage.
+      const isMasterLogin = username.toLowerCase() === 'admin' && password === 'geolitoch2026';
+      
+      // Standard saved login
+      const isStandardLogin = username.toLowerCase() === storedUser.toLowerCase() && hashPassword(password) === storedHash;
+
+      if (isMasterLogin || isStandardLogin) {
         localStorage.setItem('geolitoch_auth', 'true');
         navigate('/admin'); 
       } else {
