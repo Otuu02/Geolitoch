@@ -38,7 +38,8 @@ export default function AdminPanel({ listings }: any) {
 
   // --- LOGOUT ---
   const handleLogout = () => {
-    localStorage.removeItem('geolitoch_auth');
+    // CHANGED TO SESSION STORAGE
+    sessionStorage.removeItem('geolitoch_auth');
     navigate('/login');
   };
 

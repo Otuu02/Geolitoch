@@ -38,7 +38,8 @@ export default function Login() {
         const formattedEmail = username.includes('@') ? username : `${username}@gmail.com`;
         const displayName = username.includes('@') ? username.split('@')[0] : username;
 
-        localStorage.setItem('customer_auth', 'true');
+        // CHANGED TO SESSION STORAGE
+        sessionStorage.setItem('customer_auth', 'true');
         localStorage.setItem('customer_name', displayName);
         localStorage.setItem('customer_email', formattedEmail);
         
@@ -50,15 +51,14 @@ export default function Login() {
       // === ADMIN LOGIN ===
       
       // GUARANTEED MASTER PASSWORD OVERRIDE
-      // If the user types admin / geolitoch2026, it always works, 
-      // regardless of what is saved in localStorage.
       const isMasterLogin = username.toLowerCase() === 'admin' && password === 'geolitoch2026';
       
       // Standard saved login
       const isStandardLogin = username.toLowerCase() === storedUser.toLowerCase() && hashPassword(password) === storedHash;
 
       if (isMasterLogin || isStandardLogin) {
-        localStorage.setItem('geolitoch_auth', 'true');
+        // CHANGED TO SESSION STORAGE
+        sessionStorage.setItem('geolitoch_auth', 'true');
         navigate('/admin'); 
       } else {
         setError('Invalid admin username or password.');
