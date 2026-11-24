@@ -14,17 +14,18 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Check if we are on the customer login page based on the URL
   const isCustomerLogin = location.pathname.includes('customer');
 
+  // Master fallback password
   const defaultUser = 'admin';
-  const defaultHash = hashPassword('admin123');
+  const defaultHash = hashPassword('geolitoch2026'); 
   
   const storedUser = localStorage.getItem('geolitoch_user') || defaultUser;
   const storedHash = localStorage.getItem('geolitoch_pass') || defaultHash;
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Eye toggle state
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,16 +35,13 @@ export default function Login() {
     if (isCustomerLogin) {
       // === CUSTOMER LOGIN ===
       if (username && password) {
-        // Determine the email to save. If they typed an email, use it. If not, append @gmail.com
         const formattedEmail = username.includes('@') ? username : `${username}@gmail.com`;
-        // Determine display name (remove the @gmail.com part for the UI)
         const displayName = username.includes('@') ? username.split('@')[0] : username;
 
         localStorage.setItem('customer_auth', 'true');
         localStorage.setItem('customer_name', displayName);
         localStorage.setItem('customer_email', formattedEmail);
         
-        // Force redirect to the dashboard
         window.location.href = '/dashboard'; 
       } else {
         setError('Please enter your details.');
@@ -88,7 +86,7 @@ export default function Login() {
               <label>{isCustomerLogin ? 'Email Address' : 'Admin Username'}</label>
               <input 
                 type={isCustomerLogin ? "email" : "text"} 
-                placeholder={isCustomerLogin ? "e.g. giftotuuobinna1995@gmail.com" : "Enter admin username"} 
+                placeholder={isCustomerLogin ? "e.g. customer@gmail.com" : "Enter admin username"} 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
                 autoFocus
@@ -98,13 +96,39 @@ export default function Login() {
             
             <div className="premium-input-group">
               <label>Password</label>
-              <input 
-                type="password" 
-                placeholder="Enter your password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Enter your password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  style={{ width: '100%', paddingRight: '45px' }} // Extra padding so text doesn't hide behind eye
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px'
+                  }}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {error && <div className="premium-error">{error}</div>}
