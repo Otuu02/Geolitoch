@@ -120,8 +120,13 @@ export const TeamPage = () => {
       image: '/team/Nancy.jpg', 
     },
     {
+      name: 'Adetuwo Adebanjo Richard',
+      role: 'Head of Finance',
+      image: '/team/Adetuwo.jpeg', 
+    },
+    {
       name: 'Stella Osinachi Amadi',
-      role: 'Head of Finance & Administration',
+      role: 'Head of Administration',
       image: '/team/Stella.jpeg', 
     }
   ];
